@@ -62,5 +62,5 @@ const struct boot_data_s g_boot_data =
   IMAGE_DEST,                         /* boot start location */
   (IMAGE_DEST_END - IMAGE_DEST),      /* size */
   PLUGIN_FLAG,                        /* Plugin flag */
-  0xffffffff                          /* empty - extra data word */
+  0x00000000                          /* empty - extra data word */
 };

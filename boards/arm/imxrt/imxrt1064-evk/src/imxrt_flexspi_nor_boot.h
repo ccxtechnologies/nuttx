@@ -52,7 +52,7 @@
 #define IVT_MAJOR_VERSION           0x4
 #define IVT_MAJOR_VERSION_SHIFT     0x4
 #define IVT_MAJOR_VERSION_MASK      0xf
-#define IVT_MINOR_VERSION           0x1
+#define IVT_MINOR_VERSION           0x0
 #define IVT_MINOR_VERSION_SHIFT     0x0
 #define IVT_MINOR_VERSION_MASK      0xf
 
@@ -79,11 +79,10 @@
 
 /* This needs to take into account  the memory configuration at boot bootloader */
 
-#define ROM_BOOTLOADER_OCRAM_RES    0x8000
-#define OCRAM_BASE                  (0x20200000 + ROM_BOOTLOADER_OCRAM_RES)
-#define OCRAM_END                   (OCRAM_BASE + (512 * 1024) + (256 * 1024) \
-                                     - ROM_BOOTLOADER_OCRAM_RES)
-
+#define ROM_BOOTLOADER_OCRAM_RES    0x0
+#define OCRAM_BASE                  (0x20000000 + ROM_BOOTLOADER_OCRAM_RES)
+#define OCRAM_END                   (OCRAM_BASE + (128 * 1024))
+#if 0
 #define SCLK 1
 #if defined(CONFIG_BOOT_RUNFROMFLASH)
 #  define IMAGE_DEST                FLASH_BASE
@@ -94,19 +93,24 @@
 #  define IMAGE_DEST_END            OCRAM_END
 #  define IMAGE_DEST_OFFSET         IVT_SIZE
 #endif
+#endif
+
+#  define IMAGE_DEST                OCRAM_BASE
+#  define IMAGE_DEST_END            OCRAM_END
+#  define IMAGE_DEST_OFFSET         IVT_SIZE
 
 #define LOCATE_IN_DEST(x)           (((uint32_t)(x)) - FLASH_BASE + IMAGE_DEST)
 #define LOCATE_IN_SRC(x)            (((uint32_t)(x)) - IMAGE_DEST + FLASH_BASE)
 
 #define DCD_ADDRESS                 0
-#define BOOT_DATA_ADDRESS           LOCATE_IN_DEST(&g_boot_data)
+#define BOOT_DATA_ADDRESS           &g_boot_data
 #define CSF_ADDRESS                 0
 #define PLUGIN_FLAG                 (uint32_t)0
 
 /* Located in Destination Memory */
 
 #define IMAGE_ENTRY_ADDRESS        ((uint32_t)&_vectors)
-#define IMAG_VECTOR_TABLE           LOCATE_IN_DEST(&g_image_vector_table)
+#define IMAG_VECTOR_TABLE           &g_image_vector_table
 
 /****************************************************************************
  * Public Types

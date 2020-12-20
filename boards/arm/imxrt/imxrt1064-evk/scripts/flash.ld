@@ -1,5 +1,5 @@
 /****************************************************************************
- * boards/arm/imxrt/imxrt1064-evk/scripts/flash-ocram.ld
+ * boards/arm/imxrt/imxrt1064-evk/scripts/flash.ld
  *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -22,39 +22,28 @@
 
 MEMORY
 {
-  flash (rx)  : ORIGIN = 0x70000000, LENGTH = 4M
-  sram  (rwx) : ORIGIN = 0x20200000, LENGTH = 512M
+  sram  (rwx) : ORIGIN = 0x20200000, LENGTH = 768K
   itcm  (rwx) : ORIGIN = 0x00000000, LENGTH = 128K
-  dtcm  (rwx) : ORIGIN = 0x20000000, LENGTH = 128K
+  dtcm  (rwx) : ORIGIN = 0x20000400, LENGTH = 127k
 }
 
 OUTPUT_ARCH(arm)
 EXTERN(_vectors)
-EXTERN(g_flash_config)
-EXTERN(g_image_vector_table)
-EXTERN(g_boot_data)
 
 ENTRY(_stext)
 
 SECTIONS
-{
-    /* Image Vector Table and Boot Data for booting from external flash */
-
+{	
     .boot_hdr : ALIGN(4)
     {
-        FILL(0xff)
         __boot_hdr_start__ = ABSOLUTE(.) ;
-        KEEP(*(.boot_hdr.conf))
-        . = 0x1000 ;
         KEEP(*(.boot_hdr.ivt))
-        . = 0x1020 ;
+        . = 0x20 ;
         KEEP(*(.boot_hdr.boot_data))
-        . = 0x1030 ;
-        KEEP(*(.boot_hdr.dcd_data))
         __boot_hdr_end__ = ABSOLUTE(.) ;
-        . = 0x2000 ;
-    } >flash
-
+        . = 0xc00 ;
+    } >dtcm
+	
     .text :
     {
         _stext = ABSOLUTE(.);
@@ -70,26 +59,26 @@ SECTIONS
         *(.gcc_except_table)
         *(.gnu.linkonce.r.*)
         _etext = ABSOLUTE(.);
-    } > flash
+    } > dtcm
 
     .init_section :
     {
         _sinit = ABSOLUTE(.);
         *(.init_array .init_array.*)
         _einit = ABSOLUTE(.);
-    } > flash
+    } > dtcm
 
     .ARM.extab :
     {
         *(.ARM.extab*)
-    } > flash
+    } > dtcm
 
     .ARM.exidx :
     {
         __exidx_start = ABSOLUTE(.);
         *(.ARM.exidx*)
         __exidx_end = ABSOLUTE(.);
-    } > flash
+    } > dtcm
 
     _eronly = ABSOLUTE(.);
 
@@ -101,14 +90,14 @@ SECTIONS
         CONSTRUCTORS
         . = ALIGN(4);
         _edata = ABSOLUTE(.);
-    } > sram AT > flash
+    } > dtcm
 
     .ramfunc ALIGN(4):
     {
         _sramfuncs = ABSOLUTE(.);
         *(.ramfunc  .ramfunc.*)
         _eramfuncs = ABSOLUTE(.);
-    } > sram AT > flash
+    } > dtcm
 
     _framfuncs = LOADADDR(.ramfunc);
 
@@ -120,7 +109,7 @@ SECTIONS
         *(COMMON)
         . = ALIGN(4);
         _ebss = ABSOLUTE(.);
-    } > sram
+    } > dtcm
 
     /* Stabs debugging sections. */
 
