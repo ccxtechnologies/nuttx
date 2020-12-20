@@ -339,6 +339,21 @@ Configuration sub-directories
     Built-in applications are supported, but none are enabled.  This
     configuration does not support a network.
 
+    Currently, this configuration generates the bootable SDCard image
+    that is to be copied into DTCM by ROM Bootloader.To build NuttX,
+    navigate to nuttx directory then execute:
+    ./tools/configure.sh imxrt1064-evk:nsh
+    make oldconfig
+    make menuconfig
+
+    In menuconfig, it is important to enale DTCM. To do that, navigate
+    to "System Type" submenu and enable "Use DTCM" option.
+    Also, raw binary image of NuttX is needed so that it can be written
+    to SDCard. Navigate to "Build Setup" -> "Binary Output Formats" and
+    select "Raw binary format" option.
+
+    Then execute "make" to build NuttX.
+
   lvgl:
 
     Configures the Littlev graphic library (lvgl) demo located under
