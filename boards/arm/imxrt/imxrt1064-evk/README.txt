@@ -343,11 +343,10 @@ Configuration sub-directories
     that is to be copied into DTCM by ROM Bootloader.To build NuttX,
     navigate to nuttx directory then execute:
     ./tools/configure.sh imxrt1064-evk:nsh
-    make oldconfig
     make menuconfig
 
-    In menuconfig, it is important to enale DTCM. To do that, navigate
-    to "System Type" submenu and enable "Use DTCM" option.
+    In menuconfig, it is important to enale DTCM and ITCM. To do that, navigate
+    to "System Type" submenu and enable "Use DTCM" and "Use ITCM" options.
     Also, raw binary image of NuttX is needed so that it can be written
     to SDCard. Navigate to "Build Setup" -> "Binary Output Formats" and
     select "Raw binary format" option.
