@@ -22,7 +22,7 @@
 
 MEMORY
 {
-  sram  (rwx) : ORIGIN = 0x20200000, LENGTH = 768K
+  sram  (rwx) : ORIGIN = 0x20200000, LENGTH = 512K
   itcm  (rwx) : ORIGIN = 0x00000000, LENGTH = 128K
   dtcm  (rwx) : ORIGIN = 0x20000400, LENGTH = 127k
 }
@@ -109,7 +109,7 @@ SECTIONS
         *(COMMON)
         . = ALIGN(4);
         _ebss = ABSOLUTE(.);
-    } > dtcm
+    } > sram
 
     /* Stabs debugging sections. */
 
