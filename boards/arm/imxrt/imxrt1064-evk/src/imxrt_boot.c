@@ -88,6 +88,14 @@ void imxrt_ocram_initialize(void)
     }
 }
 
+void imxrt_configure_flexram(void)
+{
+  uint32_t regval;
+  putreg32(0xaaaaaaaa, IMXRT_IOMUXC_GPR_GPR17);
+  regval = getreg32(IMXRT_IOMUXC_GPR_GPR16);
+  putreg32(regval | GPR_GPR16_FLEXRAM_BANK_CFG_SELF, IMXRT_IOMUXC_GPR_GPR16);
+}
+
 /****************************************************************************
  * Name: imxrt_boardinitialize
  *

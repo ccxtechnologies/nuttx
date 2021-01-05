@@ -1,5 +1,5 @@
 /****************************************************************************
- * boards/arm/imxrt/imxrt1060-evk/include/board.h
+ * boards/arm/imxrt/imxrt1064-evk/include/board.h
  *
  *   Copyright (C) 2018-2019 Gregory Nutt. All rights reserved.
  *   Authors: Gregory Nutt <gnutt@nuttx.org>
@@ -35,8 +35,8 @@
  *
  ****************************************************************************/
 
-#ifndef __BOARDS_ARM_IMXRT_IMXRT1060_EVK_INCLUDE_BOARD_H
-#define __BOARDS_ARM_IMXRT_IMXRT1060_EVK_INCLUDE_BOARD_H
+#ifndef __BOARDS_ARM_IMXRT_IMXRT1064_EVK_INCLUDE_BOARD_H
+#define __BOARDS_ARM_IMXRT_IMXRT1064_EVK_INCLUDE_BOARD_H
 
 /****************************************************************************
  * Included Files
@@ -359,4 +359,4 @@ extern "C"
 #endif
 
 #endif /* __ASSEMBLY__ */
-#endif /* __BOARDS_ARM_IMXRT_IMXRT1060_EVK_INCLUDE_BOARD_H */
+#endif /* __BOARDS_ARM_IMXRT_IMXRT1064_EVK_INCLUDE_BOARD_H */
