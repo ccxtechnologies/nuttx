@@ -88,10 +88,16 @@ void imxrt_ocram_initialize(void)
     }
 }
 
+/*
+* ITCM = 0
+* DTCM = 448K (2000:0000-2006:ffff)
+* FlexRAM OCRAM = 64K (2028:0000-2028:ffff)  
+* OCRAM2 = 512K (2020:0000-2027:ffff)
+* */
 void imxrt_configure_flexram(void)
 {
   uint32_t regval;
-  putreg32(0xaaaaaaaa, IMXRT_IOMUXC_GPR_GPR17);
+  putreg32(0xaaaaaaa5, IMXRT_IOMUXC_GPR_GPR17);
   regval = getreg32(IMXRT_IOMUXC_GPR_GPR16);
   putreg32(regval | GPR_GPR16_FLEXRAM_BANK_CFG_SELF, IMXRT_IOMUXC_GPR_GPR16);
 }
