@@ -23,7 +23,7 @@
 MEMORY
 {
   sram  (rwx) : ORIGIN = 0x20200000, LENGTH = 512K
-  dtcm  (rwx) : ORIGIN = 0x20000400, LENGTH = 511k
+  dtcm  (rwx) : ORIGIN = 0x20000400, LENGTH = 447k
 }
 
 OUTPUT_ARCH(arm)

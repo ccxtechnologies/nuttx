@@ -81,7 +81,7 @@
 
 #define ROM_BOOTLOADER_OCRAM_RES    0x0
 #define OCRAM_BASE                  (0x20000000 + ROM_BOOTLOADER_OCRAM_RES)
-#define OCRAM_END                   (OCRAM_BASE + (512 * 1024))
+#define OCRAM_END                   (OCRAM_BASE + (448 * 1024))
 #if 0
 #define SCLK 1
 #if defined(CONFIG_BOOT_RUNFROMFLASH)
