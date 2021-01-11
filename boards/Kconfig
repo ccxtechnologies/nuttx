@@ -85,6 +85,15 @@ config ARCH_BOARD_C5471EVM
 		NuttX runs on the ARM core and is built with a GNU arm-nuttx-elf toolchain*.
 		This port is complete and verified.
 
+config ARCH_BOARD_CCX
+	bool "CCX Board"
+	depends on ARCH_CHIP_MIMXRT1062DVL6A
+	select ARCH_HAVE_LEDS
+	select ARCH_HAVE_BUTTONS
+	select ARCH_HAVE_IRQBUTTONS
+	---help---
+		CCX Board
+
 config ARCH_BOARD_CLICKER2_STM32
 	bool "Mikroe Clicker2 STM32"
 	depends on ARCH_CHIP_STM32F407VG
@@ -2183,6 +2192,7 @@ config ARCH_BOARD
 	default "axoloti"                  if ARCH_BOARD_AXOLOTI
 	default "bambino-200e"             if ARCH_BOARD_BAMBINO_200E
 	default "c5471evm"                 if ARCH_BOARD_C5471EVM
+	default "ccx"                      if ARCH_BOARD_CCX
 	default "clicker2-stm32"           if ARCH_BOARD_CLICKER2_STM32
 	default "cloudctrl"                if ARCH_BOARD_CLOUDCTRL
 	default "demo9s12ne64"             if ARCH_BOARD_DEMOS92S12NEC64
@@ -2426,6 +2436,9 @@ source "boards/arm/a1x/pcduino-a10/Kconfig"
 endif
 if ARCH_BOARD_BEAGLEBONE_BLACK
 source "boards/arm/am335x/beaglebone-black/Kconfig"
+endif
+if ARCH_BOARD_CCX
+source "boards/arm/imxrt/ccx/Kconfig"
 endif
 if ARCH_BOARD_C5471EVM
 source "boards/arm/c5471/c5471evm/Kconfig"

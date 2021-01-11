@@ -1,0 +1,20 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the NuttX tools repository.
+#
+
+if ARCH_BOARD_CCX
+
+choice
+	prompt "Boot Flash"
+	default CCX_QSPI_FLASH
+
+config CCX_HYPER_FLASH
+	bool "HYPER Flash"
+
+config CCX_QSPI_FLASH
+	bool "QSPI Flash"
+
+endchoice # Boot Flash
+
+endif
