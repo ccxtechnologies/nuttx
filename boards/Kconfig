@@ -85,6 +85,12 @@ config ARCH_BOARD_C5471EVM
 		NuttX runs on the ARM core and is built with a GNU arm-nuttx-elf toolchain*.
 		This port is complete and verified.
 
+config ARCH_BOARD_CCX_FLIGHT_CONTROLLER
+	bool "CCX Flight Controller"
+	depends on ARCH_CHIP_MIMXRT1064CVJ5A
+	---help---
+		CCX Flight Controller
+
 config ARCH_BOARD_CLICKER2_STM32
 	bool "Mikroe Clicker2 STM32"
 	depends on ARCH_CHIP_STM32F407VG
@@ -2183,6 +2189,7 @@ config ARCH_BOARD
 	default "axoloti"                  if ARCH_BOARD_AXOLOTI
 	default "bambino-200e"             if ARCH_BOARD_BAMBINO_200E
 	default "c5471evm"                 if ARCH_BOARD_C5471EVM
+	default "ccx-flight-controller"    if ARCH_BOARD_CCX_FLIGHT_CONTROLLER
 	default "clicker2-stm32"           if ARCH_BOARD_CLICKER2_STM32
 	default "cloudctrl"                if ARCH_BOARD_CLOUDCTRL
 	default "demo9s12ne64"             if ARCH_BOARD_DEMOS92S12NEC64

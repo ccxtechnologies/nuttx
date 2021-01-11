@@ -64,6 +64,10 @@ config ARCH_CHIP_MIMXRT1062CVL5A
 	select ARCH_FAMILY_MIMXRT106xCVL5A
 	select IMXRT_HAVE_LCD
 
+config ARCH_CHIP_MIMXRT1064CVJ5A
+	bool "MIMXRT1064CVJ5A"
+	select ARCH_FAMILY_MIMXRT106xCVJ5A
+
 endchoice # i.MX RT Chip Selection
 
 # i.MX RT Families
@@ -123,6 +127,13 @@ config ARCH_FAMILY_MXRT106xDVL6A
 	---help---
 		i.MX RT1060 Crossover Processors for Consumer Products
 
+config ARCH_FAMILY_MIMXRT106xCVJ5A
+	bool
+	default n
+	select ARCH_FAMILY_IMXRT106x
+	---help---
+		i.MX RT1060 Crossover Processors for Consumer Products
+		
 config ARCH_FAMILY_MIMXRT106xCVL5A
 	bool
 	default n
