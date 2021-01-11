@@ -80,8 +80,7 @@
 #elif defined(CONFIG_ARCH_CHIP_MIMXRT1061DVL6A) || \
       defined(CONFIG_ARCH_CHIP_MIMXRT1061CVL5A) || \
       defined(CONFIG_ARCH_CHIP_MIMXRT1062DVL6A) || \
-      defined(CONFIG_ARCH_CHIP_MIMXRT1062CVL5A) || \
-      defined(CONFIG_ARCH_CHIP_MIMXRT1064CVJ5A)
+      defined(CONFIG_ARCH_CHIP_MIMXRT1062CVL5A)
 /* MIMXRT1061CVL5A - Industrial, Reduced Features, 528MHz
  * MIMXRT1061DVL6A - Consumer, Reduced Features, 600MHz
  * MIMXRT1062CVL5A - Industrial, Full Feature, 528MHz
