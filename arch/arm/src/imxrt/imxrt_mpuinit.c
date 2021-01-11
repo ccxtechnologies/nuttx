@@ -124,14 +124,6 @@ void imxrt_mpu_initialize(void)
                        MPU_RASR_AP_RWRW    /* P:RW   U:RW        */
                                            /* Instruction access */);
 
-  mpu_configure_region(IMXRT_EXTMEM_BASE, 1024 * 1024 * 1024,
-                       MPU_RASR_TEX_DEV  | /* Device             */
-                                           /* Not Cacheable      */
-                                           /* Not Bufferable     */
-                                           /* Not Shareable      */
-                       MPU_RASR_AP_RWRW    /* P:RW   U:RW        */
-                                           /* Instruction access */);
-
   mpu_configure_region(IMXRT_FLEXCIPHER_BASE, 8 * 1024 * 1024,
                        MPU_RASR_TEX_SO   | /* Ordered            */
                        MPU_RASR_C        | /* Cacheable          */
@@ -176,22 +168,6 @@ void imxrt_mpu_initialize(void)
                        MPU_RASR_TEX_SO   | /* Ordered            */
                        MPU_RASR_C        | /* Cacheable          */
                        MPU_RASR_B        | /* Bufferable         */
-                                           /* Not Shareable      */
-                       MPU_RASR_AP_RWRW    /* P:RW   U:RW        */
-                                           /* Instruction access */);
-
-  mpu_configure_region(IMXRT_EXTMEM_BASE,  32 * 1024 * 1024,
-                       MPU_RASR_TEX_SO   | /* Ordered            */
-                       MPU_RASR_C        | /* Cacheable          */
-                       MPU_RASR_B        | /* Bufferable         */
-                                           /* Not Shareable      */
-                       MPU_RASR_AP_RWRW    /* P:RW   U:RW        */
-                                           /* Instruction access */);
-
-  mpu_configure_region(0x81e00000,  2 * 1024 * 1024,
-                       MPU_RASR_TEX_NOR  | /* Normal             */
-                                           /* Not Cacheable      */
-                                           /* Not Bufferable     */
                                            /* Not Shareable      */
                        MPU_RASR_AP_RWRW    /* P:RW   U:RW        */
                                            /* Instruction access */);
