@@ -73,10 +73,6 @@ ifeq ($(CONFIG_IMXRT_ADC),y)
 CSRCS += imxrt_adc.c
 endif
 
-ifeq ($(CONFIG_INPUT_FT5X06),y)
-CSRCS += imxrt_ft5x06.c
-endif
-
 ifeq ($(CONFIG_IMXRT_USBOTG),y)
 CSRCS += imxrt_usbhost.c
 endif

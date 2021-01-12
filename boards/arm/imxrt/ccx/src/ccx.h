@@ -56,17 +56,6 @@
  * Pre-processor Definitions
  ****************************************************************************/
 
-/* Touchscreen definitions **************************************************/
-
-/* The IMXRT 1050/1060 have connectors for the LCD model RK043FN02H-CT.
- * It comes with the FT5336GQQ (FT5X06) touchscreen chip integrated.
- * FT5X06 is connected to the LPI2C1 bus.
- */
-
-/* LPI2C address of the FT5336GQQ touchscreen chip */
-
-#define FT5X06_I2C_ADDRESS  0x38
-
 /* i.MX RT 1060 GPIO Pin Definitions ****************************************/
 
 /* LEDs */
@@ -155,26 +144,6 @@
 #define GPIO_MMCSD_EN        (GPIO_OUTPUT | GPIO_OUTPUT_ZERO | \
                               GPIO_PORT3 | GPIO_PIN2 | IOMUX_MMCSD_EN)
 
-/* Touchscreen
- *
- * Interrupt line: GPIO_AD_B0_11
- *
- * The interrupt line coming from the touchscreen FT5336GQQ IC.
- * The touchscreen IC is integrated into the optional RK043FN02H-CT LCD panel
- * and it's connected to the LPI2C1 bus.
- *
- * Reset line: GPIO_AD_B0_02
- *
- * The reset line is active low.
- */
-
-#define GPIO_FT5X06_INTR     IMXRT_IRQ_GPIO1_11
-
-#define IOMUX_FT5X06_RST     (IOMUX_PULL_NONE | IOMUX_CMOS_OUTPUT | \
-                              IOMUX_DRIVE_40OHM | IOMUX_SPEED_MEDIUM | \
-                              IOMUX_SLEW_SLOW)                            /* AD_B0_11 */
-#define GPIO_FT5X06_CTRSTn   (GPIO_OUTPUT | GPIO_OUTPUT_ZERO | \
-                              GPIO_PORT1 | GPIO_PIN2 | IOMUX_FT5X06_RST)  /* AD_B0_02 */
 
 /* Test Pins ****************************************************************/
 
@@ -294,18 +263,6 @@ int imxrt_can_setup(void);
 
 #ifdef CONFIG_IMXRT_ADC
 int imxrt_adc_initialize(void);
-#endif
-
-/****************************************************************************
- * Name: imxrt_ft5x06_register
- *
- * Description:
- *   Initialize ft5x06 IC touchscreen driver
- *
- ****************************************************************************/
-
-#ifdef CONFIG_INPUT_FT5X06
-int imxrt_ft5x06_register(void);
 #endif
 
 #if defined(CONFIG_IMXRT_USBOTG) || defined(CONFIG_USBHOST)
