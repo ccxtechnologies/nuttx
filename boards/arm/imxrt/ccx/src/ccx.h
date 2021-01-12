@@ -108,21 +108,23 @@
 #  endif
 #endif
 
-/* LPSPI1 CS:  GPIO_SD_B0_01 */
+/* LPSPI1 CS:  GPIO_EMC_30 */
 
 #define IOMUX_LPSPI1_CS (IOMUX_SLEW_FAST | IOMUX_DRIVE_50OHM | \
                          IOMUX_SPEED_MEDIUM | IOMUX_PULL_UP_100K | \
                          _IOMUX_PULL_ENABLE)
 #define GPIO_LPSPI1_CS  (GPIO_OUTPUT | GPIO_OUTPUT_ONE | \
-                         GPIO_PORT3 | GPIO_PIN13 | IOMUX_LPSPI1_CS)
+                         GPIO_PORT4 | GPIO_PIN30 | IOMUX_LPSPI1_CS)
 
 /* LPSPI3 CS:  GPIO_AD_B0_03 */
 
+#if 0
 #define IOMUX_LPSPI3_CS      (IOMUX_SLEW_FAST | IOMUX_DRIVE_50OHM | \
                               IOMUX_SPEED_MEDIUM | IOMUX_PULL_UP_100K | \
                               _IOMUX_PULL_ENABLE)
 #define GPIO_LPSPI3_CS       (GPIO_OUTPUT | GPIO_OUTPUT_ONE | \
                               GPIO_PORT1 | GPIO_PIN3 | IOMUX_LPSPI3_CS) /* GPIO_AD_B0_03 */
+#endif
 
 /* MMC/SD */
 
