@@ -193,18 +193,6 @@
  * 2Hz, then a fatal error has been detected and the system has halted.
  */
 
-/* Button definitions *******************************************************/
-
-/* The IMXRT board has one external user button
- *
- * 1. SW8 (IRQ88)   GPIO5-00
- */
-
-#define BUTTON_SW8        0
-#define NUM_BUTTONS       1
-
-#define BUTTON_SW8_BIT    (1 << BUTTON_SW8)
-
 /* SDIO *********************************************************************/
 
 /* Pin drive characteristics - drive strength in particular may need tuning

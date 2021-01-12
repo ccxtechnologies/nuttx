@@ -79,19 +79,6 @@
 
 #define LED_DRIVER_PATH "/dev/userleds"
 
-/* Buttons ******************************************************************/
-
-/* The IMXRT board has one external user button
- *
- * 1. SW8 (IRQ88)   GPIO5-00
- */
-
-#define GPIO_SW8       (GPIO_INTERRUPT | GPIO_INTBOTH_EDGES | \
-                        IOMUX_SW_DEFAULT | \
-                        GPIO_PORT5 | GPIO_PIN0)    /* WAKEUP */
-
-#define GPIO_SW8_INT   (_IMXRT_GPIO5_0_15_BASE+0)
-
 /* Ethernet */
 
 /* Ethernet Interrupt: GPIOAD_B0_10

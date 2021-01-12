@@ -46,10 +46,8 @@
 
 #include <syslog.h>
 #include <nuttx/i2c/i2c_master.h>
-#include <nuttx/video/fb.h>
 #include <imxrt_lpi2c.h>
 #include <imxrt_lpspi.h>
-#include <nuttx/input/buttons.h>
 
 #ifdef CONFIG_IMXRT_USDHC
 #  include "imxrt_usdhc.h"
@@ -246,23 +244,6 @@ int imxrt_bringup(void)
       syslog(LOG_ERR, "ERROR: imxrt_adc_initialize() failed: %d\n", ret);
     }
 #endif
-
-#ifdef CONFIG_BUTTONS
-#ifdef CONFIG_BUTTONS_LOWER
-  /* Register the BUTTON driver */
-
-  ret = btn_lower_initialize("/dev/buttons");
-  if (ret != OK)
-    {
-      syslog(LOG_ERR, "ERROR: btn_lower_initialize() failed: %d\n", ret);
-      return ret;
-    }
-#else
-  /* Enable BUTTON support for some other purpose */
-
-  board_button_initialize();
-#endif /* CONFIG_BUTTONS_LOWER */
-#endif /* CONFIG_BUTTONS */
 
 #ifdef CONFIG_PL2303
   usbdev_serialinitialize(0);

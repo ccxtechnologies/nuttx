@@ -49,10 +49,6 @@ else
 CSRCS += imxrt_userleds.c
 endif
 
-ifeq ($(CONFIG_ARCH_BUTTONS),y)
-CSRCS += imxrt_buttons.c
-endif
-
 ifeq ($(CONFIG_IMXRT_ENET),y)
 CSRCS += imxrt_ethernet.c
 endif
