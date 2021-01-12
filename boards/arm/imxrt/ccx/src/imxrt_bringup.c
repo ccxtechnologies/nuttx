@@ -257,12 +257,6 @@ int imxrt_bringup(void)
     }
 #endif
 
-#ifdef CONFIG_IMXRT_LCD
-  /* Initialize the backlight pin and turn it to ON. */
-
-  imxrt_lcd_initialize();
-#endif
-
 #ifdef CONFIG_BUTTONS
 #ifdef CONFIG_BUTTONS_LOWER
   /* Register the BUTTON driver */

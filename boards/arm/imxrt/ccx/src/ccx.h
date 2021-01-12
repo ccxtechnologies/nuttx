@@ -103,11 +103,6 @@
 
 #define GPIO_SW8_INT   (_IMXRT_GPIO5_0_15_BASE+0)
 
-/* LCD Backlight */
-
-#define GPIO_LCD_BL     (GPIO_OUTPUT | GPIO_OUTPUT_ZERO | GPIO_PORT2 | \
-                         GPIO_PIN31 | IOMUX_LCD_BL_DEFAULT)
-
 /* Ethernet */
 
 /* Ethernet Interrupt: GPIOAD_B0_10
@@ -311,18 +306,6 @@ int imxrt_adc_initialize(void);
 
 #ifdef CONFIG_INPUT_FT5X06
 int imxrt_ft5x06_register(void);
-#endif
-
-/****************************************************************************
- * Name: imxrt_backlight
- *
- * Description:
- *   Initialize the backlight pins of the LCD and turn it ON
- *
- ****************************************************************************/
-
-#ifdef CONFIG_IMXRT_LCD
-void imxrt_lcd_initialize(void);
 #endif
 
 #if defined(CONFIG_IMXRT_USBOTG) || defined(CONFIG_USBHOST)
