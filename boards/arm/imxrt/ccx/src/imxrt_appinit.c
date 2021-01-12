@@ -83,6 +83,7 @@
 
 int board_app_initialize(uintptr_t arg)
 {
+#if 0
 #ifdef HAVE_LEDS
   /* Register the LED driver */
 
@@ -93,6 +94,7 @@ int board_app_initialize(uintptr_t arg)
       syslog(LOG_ERR, "ERROR: userled_lower_initialize() failed: %d\n", ret);
       return ret;
     }
+#endif
 #endif
 
 #ifndef CONFIG_BOARD_LATE_INITIALIZE

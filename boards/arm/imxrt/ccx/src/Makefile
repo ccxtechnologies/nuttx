@@ -45,8 +45,8 @@ endif
 
 ifeq ($(CONFIG_ARCH_LEDS),y)
 CSRCS += imxrt_autoleds.c
-else
-CSRCS += imxrt_userleds.c
+# else
+# CSRCS += imxrt_userleds.c
 endif
 
 ifeq ($(CONFIG_IMXRT_ENET),y)
