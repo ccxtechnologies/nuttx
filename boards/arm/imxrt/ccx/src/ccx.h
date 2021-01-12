@@ -75,7 +75,7 @@
  */
 
 #define GPIO_LED        (GPIO_OUTPUT | IOMUX_LED_DEFAULT | \
-                         GPIO_OUTPUT_ZERO | GPIO_PORT1 | GPIO_PIN9)  /* AD_B0_09 */
+                         GPIO_OUTPUT_ZERO | GPIO_PORT3 | GPIO_PIN7)  /* AD_B0_09 */
 
 #define LED_DRIVER_PATH "/dev/userleds"
 
@@ -134,21 +134,21 @@
 
 /* Test Pins ****************************************************************/
 
-#define BOARD_NGPIOIN   0 /* Amount of GPIO Input pins */
-#define BOARD_NGPIOOUT  4 /* Amount of GPIO Output pins */
-#define BOARD_NGPIOINT  0 /* Amount of GPIO Input w/ Interruption pins */
+// #define BOARD_NGPIOIN   0 /* Amount of GPIO Input pins */
+// #define BOARD_NGPIOOUT  4 /* Amount of GPIO Output pins */
+// #define BOARD_NGPIOINT  0 /* Amount of GPIO Input w/ Interruption pins */
 
-#define GPIO_GOUT1      (GPIO_OUTPUT | GPIO_OUTPUT_ZERO | IOMUX_GOUT_DEFAULT | \
-                         GPIO_PORT1 | GPIO_PIN19)
+// #define GPIO_GOUT1      (GPIO_OUTPUT | GPIO_OUTPUT_ZERO | IOMUX_GOUT_DEFAULT | \
+//                          GPIO_PORT1 | GPIO_PIN19)
 
-#define GPIO_GOUT2      (GPIO_OUTPUT | GPIO_OUTPUT_ZERO | IOMUX_GOUT_DEFAULT | \
-                         GPIO_PIN18 | GPIO_PORT1)
+// #define GPIO_GOUT2      (GPIO_OUTPUT | GPIO_OUTPUT_ZERO | IOMUX_GOUT_DEFAULT | \
+//                          GPIO_PIN18 | GPIO_PORT1)
 
-#define GPIO_GOUT3      (GPIO_OUTPUT | GPIO_OUTPUT_ZERO | IOMUX_GOUT_DEFAULT | \
-                         GPIO_PIN10 | GPIO_PORT1)
+// #define GPIO_GOUT3      (GPIO_OUTPUT | GPIO_OUTPUT_ZERO | IOMUX_GOUT_DEFAULT | \
+//                          GPIO_PIN10 | GPIO_PORT1)
 
-#define GPIO_GOUT4      (GPIO_OUTPUT | GPIO_OUTPUT_ZERO | IOMUX_GOUT_DEFAULT | \
-                         GPIO_PIN9 | GPIO_PORT1)
+// #define GPIO_GOUT4      (GPIO_OUTPUT | GPIO_OUTPUT_ZERO | IOMUX_GOUT_DEFAULT | \
+//                          GPIO_PIN9 | GPIO_PORT1)
 
 /* USB OTG ID Pin： GPIO_AD_B1_02 */
 
