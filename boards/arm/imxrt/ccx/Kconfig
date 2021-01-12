@@ -9,9 +9,6 @@ choice
 	prompt "Boot Flash"
 	default CCX_QSPI_FLASH
 
-config CCX_HYPER_FLASH
-	bool "HYPER Flash"
-
 config CCX_QSPI_FLASH
 	bool "QSPI Flash"
 
