@@ -264,16 +264,6 @@ int imxrt_bringup(void)
 #endif /* CONFIG_BUTTONS_LOWER */
 #endif /* CONFIG_BUTTONS */
 
-#ifdef CONFIG_VIDEO_FB
-  /* Initialize and register the framebuffer driver */
-
-  ret = fb_register(0, 0);
-  if (ret < 0)
-    {
-      syslog(LOG_ERR, "ERROR: fb_register() failed: %d\n", ret);
-    }
-#endif
-
 #ifdef CONFIG_PL2303
   usbdev_serialinitialize(0);
 #endif
