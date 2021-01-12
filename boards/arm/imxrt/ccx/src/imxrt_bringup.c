@@ -235,16 +235,6 @@ int imxrt_bringup(void)
     }
 #endif
 
-#ifdef CONFIG_IMXRT_ADC
-  /* Initialize ADC and register the ADC driver. */
-
-  ret = imxrt_adc_initialize();
-  if (ret < 0)
-    {
-      syslog(LOG_ERR, "ERROR: imxrt_adc_initialize() failed: %d\n", ret);
-    }
-#endif
-
 #ifdef CONFIG_PL2303
   usbdev_serialinitialize(0);
 #endif

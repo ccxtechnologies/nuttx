@@ -240,18 +240,6 @@ int imxrt_gpio_initialize(void);
 int imxrt_can_setup(void);
 #endif
 
-/****************************************************************************
- * Name: imxrt_adc_initialize
- *
- * Description:
- *   Initialize ADC drivers
- *
- ****************************************************************************/
-
-#ifdef CONFIG_IMXRT_ADC
-int imxrt_adc_initialize(void);
-#endif
-
 #if defined(CONFIG_IMXRT_USBOTG) || defined(CONFIG_USBHOST)
 int imxrt_usbhost_initialize(void);
 #endif
