@@ -31,7 +31,7 @@ https://gist.github.com/CFD2/75cae9c7c00bc7ea0cf77ef32d74b30e
 
 Create a directory ***nuttxspace*** and navigate to it.
 
-Clone the core NuttX RTOS and semi-optional apps):
+Clone the core NuttX RTOS and apps:
 
     git clone https://github.com/ccxtechnologies/nuttx.git nuttx
     git clone https://github.com/apache/incubator-nuttx-apps.git apps
