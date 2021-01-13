@@ -184,10 +184,11 @@ be useful to you:
 
 # Running NuttX
 
-## Flashing the image onto the SD Card
+## Flashing the image onto SD Card
 
-Once NuttX is built, the image file nuttx.bin is placed in `{TOPDIR}`
-Please keep in mind that both ccx and imrt1064-evk board configs can only generate
+Once NuttX is built, the image file nuttx.bin is placed in `{TOPDIR}`.
+
+Please keep in mind that both ***ccx*** and ***imrt1064-evk*** board configs can only generate
 the bootable image intended to be run from the SDCard (and then copied to DTCM).
 
 Use dd to copy the image to the microSD Card.
@@ -202,4 +203,4 @@ Navigate to `{TOPDIR}`
 Flash nuttx.bin onto the SDCard (replace "yourblockdevice" with the proper block
 device name for the SDCard):
 
-    dd if=nuttx.bin of=/dev/$DESTINATION seek=1 bs=1K
+    dd if=nuttx.bin of=/dev/yourblockdevice seek=1 bs=1K
