@@ -9,15 +9,15 @@ Install the following packages using pacman:
     gperf
     gdb
 
-Install ncurses:
-    https://aur.archlinux.org/packages/ncurses5-compat-libs/
-Install kconfig-frontends:
-    https://aur.archlinux.org/packages/kconfig-frontends/
+Install ncurses:\
+https://aur.archlinux.org/packages/ncurses5-compat-libs/\
+Install kconfig-frontends:\
+https://aur.archlinux.org/packages/kconfig-frontends/\
 
-Build arm-none-eabi toolchain from sources.
-You can use this script as a guide:
-    https://gist.github.com/CFD2/75cae9c7c00bc7ea0cf77ef32d74b30e
-    (@TODO: find a better place to store this gist)
+Build arm-none-eabi toolchain from sources.\
+You can use this script as a guide:\
+https://gist.github.com/CFD2/75cae9c7c00bc7ea0cf77ef32d74b30e\
+(@TODO: find a better place to store this gist)
 
 
 # INSTALLATION
@@ -27,34 +27,34 @@ You can use this script as a guide:
 ### Cloning the Repository
 
 **NuttX needs to reside in a path that contains no spaces.**
-Create a directory ***nuttxspace***. Here are instructions
+Create a directory ***nuttxspace*** and navigate to it. Here are instructions
 for cloning the core NuttX RTOS and semi-optional apps):
 
     git clone https://github.com/ccxtechnologies/nuttx.git nuttx
     git clone https://github.com/apache/incubator-nuttx-apps.git apps
 
-That will give you the directory structure like this:
-          nuttxspace/
-             |
-        +----+----+
-        |         |
-      nuttx/     apps/
+This will result in 2 directories inside nuttxspace/:
++ nuttxspace/
+    - nuttx/
+    - apps/
+
 
 # CONFIGURING NUTTX
 
-Navigate to nuttxspace/nuttx/
-Execute:
+Navigate to nuttxspace/nuttx/\
+Execute:\
+
     ./tools/configure.sh -l ccx:nsh
 
   *-l* is for Linux environment
 
-  *ccx* is the board-name directory located under
+  *ccx* is the board-name directory located under\
   `{TOPDIR}/boards/<arch-name>/<chip-name>/<board-name>/`
 
-  *nsh* is the config-name directory under
+  *nsh* is the config-name directory under\
   `{TOPDIR}/boards/<arch-name>/<chip-name>/<board-name>/configs/<config-name>/`
 
-Now we need to change a some settings in menuconfig.
+Now we need to change some settings in menuconfig.
 Execute:
     make menuconfig
 
