@@ -31,7 +31,7 @@ https://gist.github.com/CFD2/75cae9c7c00bc7ea0cf77ef32d74b30e
 
 Create a directory ***nuttxspace*** and navigate to it.
 
-Here are instructions for cloning the core NuttX RTOS and semi-optional apps):
+Clone the core NuttX RTOS and semi-optional apps):
 
     git clone https://github.com/ccxtechnologies/nuttx.git nuttx
     git clone https://github.com/apache/incubator-nuttx-apps.git apps
@@ -188,19 +188,19 @@ be useful to you:
 
 Once NuttX is built, the image file nuttx.bin is placed in `{TOPDIR}`.
 
-Please keep in mind that both ***ccx*** and ***imrt1064-evk*** board configs can only generate
-the bootable image intended to be run from the SDCard (and then copied to DTCM).
+Please keep in mind that both ***ccx*** and ***imxrt1064-evk*** board configs can only generate
+bootable image intended to be run from SDCard (and then copied to DTCM).
 
-Use dd to copy the image to the microSD Card.
+Use dd to copy the built image to microSD Card.
 
-Erase the first 4K (replace "yourblockdevice" with the proper block device name
-for the SDCard):
+Erase the first 4K (replace "yourblockdevice" with proper block device name
+for SDCard):
 
     dd if=/dev/zero of=/dev/yourblockdevice count=4 bs=1K
 
 Navigate to `{TOPDIR}`
 
-Flash nuttx.bin onto the SDCard (replace "yourblockdevice" with the proper block
-device name for the SDCard):
+Flash nuttx.bin onto the SDCard (replace "yourblockdevice" with proper block
+device name for SDCard):
 
     dd if=nuttx.bin of=/dev/yourblockdevice seek=1 bs=1K
