@@ -10,13 +10,14 @@ Install the following packages using pacman:
     gdb
 
 Install ncurses:\
-https://aur.archlinux.org/packages/ncurses5-compat-libs/\
+https://aur.archlinux.org/packages/ncurses5-compat-libs/
+
 Install kconfig-frontends:\
-https://aur.archlinux.org/packages/kconfig-frontends/\
+https://aur.archlinux.org/packages/kconfig-frontends/
 
 Build arm-none-eabi toolchain from sources.\
 You can use this script as a guide:\
-https://gist.github.com/CFD2/75cae9c7c00bc7ea0cf77ef32d74b30e\
+https://gist.github.com/CFD2/75cae9c7c00bc7ea0cf77ef32d74b30e
 (@TODO: find a better place to store this gist)
 
 
@@ -27,13 +28,15 @@ https://gist.github.com/CFD2/75cae9c7c00bc7ea0cf77ef32d74b30e\
 ### Cloning the Repository
 
 **NuttX needs to reside in a path that contains no spaces.**
-Create a directory ***nuttxspace*** and navigate to it. Here are instructions
-for cloning the core NuttX RTOS and semi-optional apps):
+
+Create a directory ***nuttxspace*** and navigate to it.
+
+Here are instructions for cloning the core NuttX RTOS and semi-optional apps):
 
     git clone https://github.com/ccxtechnologies/nuttx.git nuttx
     git clone https://github.com/apache/incubator-nuttx-apps.git apps
 
-This will result in 2 directories inside nuttxspace/:
+This will result in the following directory structure:
 + nuttxspace/
     - nuttx/
     - apps/
@@ -42,7 +45,7 @@ This will result in 2 directories inside nuttxspace/:
 # CONFIGURING NUTTX
 
 Navigate to nuttxspace/nuttx/\
-Execute:\
+Execute:
 
     ./tools/configure.sh -l ccx:nsh
 
@@ -54,21 +57,23 @@ Execute:\
   *nsh* is the config-name directory under\
   `{TOPDIR}/boards/<arch-name>/<chip-name>/<board-name>/configs/<config-name>/`
 
+
 Now we need to change some settings in menuconfig.
 Execute:
+
     make menuconfig
 
 Inside menuconfig navigate to:
 
-  Build Setup -> Binary Output Formats ->
-    Select "Raw Binary format" and press "y" to enable this setting.
+    Build Setup -> Binary Output Formats ->
+      Select "Raw Binary format" and press "y" to enable this setting.
 
-  System Type ->
-    Select "Use DTCM" and press "y" to enable this setting.
+    System Type ->
+      Select "Use DTCM" and press "y" to enable this setting.
 
-  Board Selection ->
-    Select "Board LED Status Support" and press "n" to disable this
-    setting.
+    Board Selection ->
+      Select "Board LED Status Support" and press "n" to disable this
+      setting.
 
 Press ESC-ESC to exit from menuconfig. You will be prompted to save
 changes.
@@ -189,9 +194,12 @@ Use dd to copy the image to the microSD Card.
 
 Erase the first 4K (replace "yourblockdevice" with the proper block device name
 for the SDCard):
+
     dd if=/dev/zero of=/dev/yourblockdevice count=4 bs=1K
 
 Navigate to `{TOPDIR}`
+
 Flash nuttx.bin onto the SDCard (replace "yourblockdevice" with the proper block
 device name for the SDCard):
+
     dd if=nuttx.bin of=/dev/$DESTINATION seek=1 bs=1K
