@@ -2437,9 +2437,6 @@ endif
 if ARCH_BOARD_BEAGLEBONE_BLACK
 source "boards/arm/am335x/beaglebone-black/Kconfig"
 endif
-if ARCH_BOARD_CCX
-source "boards/arm/imxrt/ccx/Kconfig"
-endif
 if ARCH_BOARD_C5471EVM
 source "boards/arm/c5471/c5471evm/Kconfig"
 endif
