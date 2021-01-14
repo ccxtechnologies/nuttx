@@ -46,10 +46,6 @@
 
 #include "ccx.h"
 
-#if !defined(CONFIG_ARCH_LEDS) && defined(CONFIG_USERLED_LOWER)
-#  define HAVE_LEDS 0
-#endif
-
 #ifdef CONFIG_LIB_BOARDCTL
 
 /****************************************************************************
@@ -83,20 +79,6 @@
 
 int board_app_initialize(uintptr_t arg)
 {
-#if 0
-#ifdef HAVE_LEDS
-  /* Register the LED driver */
-
-  int ret;
-  ret = userled_lower_initialize(LED_DRIVER_PATH);
-  if (ret < 0)
-    {
-      syslog(LOG_ERR, "ERROR: userled_lower_initialize() failed: %d\n", ret);
-      return ret;
-    }
-#endif
-#endif
-
 #ifndef CONFIG_BOARD_LATE_INITIALIZE
   /* Perform board initialization */
 

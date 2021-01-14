@@ -35,7 +35,7 @@
 
 include $(TOPDIR)/Make.defs
 
-CSRCS = imxrt_boot.c imxrt_flexspi_nor_boot.c imxrt_flexspi_nor_flash.c
+CSRCS = imxrt_boot.c imxrt_flexspi_nor_boot.c
 
 ifeq ($(CONFIG_LIB_BOARDCTL),y)
 CSRCS += imxrt_appinit.c imxrt_bringup.c
@@ -43,34 +43,8 @@ else ifeq ($(CONFIG_BOARD_LATE_INITIALIZE),y)
 CSRCS += imxrt_bringup.c
 endif
 
-ifeq ($(CONFIG_ARCH_LEDS),y)
-CSRCS += imxrt_autoleds.c
-# else
-# CSRCS += imxrt_userleds.c
-endif
-
-ifeq ($(CONFIG_IMXRT_ENET),y)
-CSRCS += imxrt_ethernet.c
-endif
-
 ifeq ($(CONFIG_IMXRT_LPSPI),y)
 CSRCS += imxrt_spi.c
-endif
-
-ifeq ($(CONFIG_MMCSD_SPI),y)
-CSRCS += imxrt_mmcsd_spi.c
-endif
-
-ifeq ($(CONFIG_DEV_GPIO),y)
-CSRCS += imxrt_gpio.c
-endif
-
-ifeq ($(CONFIG_IMXRT_USBOTG),y)
-CSRCS += imxrt_usbhost.c
-endif
-
-ifeq ($(CONFIG_IMXRT_FLEXCAN),y)
-CSRCS += imxrt_flexcan.c
 endif
 
 include $(TOPDIR)/boards/Board.mk

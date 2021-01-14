@@ -56,58 +56,6 @@
  * Pre-processor Definitions
  ****************************************************************************/
 
-/* i.MX RT 1060 GPIO Pin Definitions ****************************************/
-
-/* LEDs */
-
-/* There are four LED status indicators located on the EVK Board.
- * The functions of these LEDs include:
- *
- *   - Main Power Supply(D3)
- *     Green: DC 5V main supply is normal.
- *     Red:   J2 input voltage is over 5.6V.
- *     Off:   The board is not powered.
- *   - Reset RED LED(D15)
- *   - OpenSDA LED(D16)
- *   - USER LED(D18)
- *
- * Only a single LED, D18, is under software control.
- */
-#if 0
-#define GPIO_LED        (GPIO_OUTPUT | IOMUX_LED_DEFAULT | \
-                         GPIO_OUTPUT_ZERO | GPIO_PORT1 | GPIO_PIN9)  /* AD_B0_09 */
-
-#define LED_DRIVER_PATH "/dev/userleds"
-#endif
-
-/* Ethernet */
-
-/* Ethernet Interrupt: GPIOAD_B0_10
- *
- * This pin has a week pull-up within the PHY, is open-drain, and requires
- * an external 1k ohm pull-up resistor (present on the EVK).  A falling
- * edge then indicates a change in state of the PHY.
- */
-
-#define GPIO_ENET_INT   (IOMUX_ENET_INT_DEFAULT | \
-                         GPIO_PORT1 | GPIO_PIN10)    /* AD_B0_10 */
-#define GPIO_ENET_IRQ   IMXRT_IRQ_GPIO1_10
-
-/* Ethernet Reset:  GPIOAD_B0_09
- *
- * The #RST uses inverted logic.  The initial value of zero will put the
- * PHY into the reset state.
- */
-
-#define GPIO_ENET_RST   (GPIO_OUTPUT | GPIO_OUTPUT_ZERO | \
-                         GPIO_PORT1 | GPIO_PIN9 | IOMUX_ENET_RST_DEFAULT) /* AD_B0_09 */
-
-#ifdef CONFIG_ETH0_PHY_KSZ8081
-#  ifdef GPIO_LED
-#    warning LED interferes with ETH reset unless R323 is removed.
-#  endif
-#endif
-
 /* LPSPI1 CS:  GPIO_EMC_30 */
 
 #define IOMUX_LPSPI1_CS (IOMUX_SLEW_FAST | IOMUX_DRIVE_50OHM | \
@@ -116,48 +64,7 @@
 #define GPIO_LPSPI1_CS  (GPIO_OUTPUT | GPIO_OUTPUT_ONE | \
                          GPIO_PORT4 | GPIO_PIN30 | IOMUX_LPSPI1_CS)
 
-/* LPSPI3 CS:  GPIO_AD_B0_03 */
 
-#if 0
-#define IOMUX_LPSPI3_CS      (IOMUX_SLEW_FAST | IOMUX_DRIVE_50OHM | \
-                              IOMUX_SPEED_MEDIUM | IOMUX_PULL_UP_100K | \
-                              _IOMUX_PULL_ENABLE)
-#define GPIO_LPSPI3_CS       (GPIO_OUTPUT | GPIO_OUTPUT_ONE | \
-                              GPIO_PORT1 | GPIO_PIN3 | IOMUX_LPSPI3_CS) /* GPIO_AD_B0_03 */
-#endif
-
-/* MMC/SD */
-
-#define IOMUX_MMCSD_EN       (IOMUX_SLEW_FAST | IOMUX_DRIVE_50OHM | \
-                              IOMUX_SPEED_MEDIUM | IOMUX_PULL_UP_100K | \
-                              _IOMUX_PULL_ENABLE)
-#define GPIO_MMCSD_EN        (GPIO_OUTPUT | GPIO_OUTPUT_ZERO | \
-                              GPIO_PORT3 | GPIO_PIN2 | IOMUX_MMCSD_EN)
-
-
-/* Test Pins ****************************************************************/
-
-#if 0
-#define BOARD_NGPIOIN   0 /* Amount of GPIO Input pins */
-#define BOARD_NGPIOOUT  4 /* Amount of GPIO Output pins */
-#define BOARD_NGPIOINT  0 /* Amount of GPIO Input w/ Interruption pins */
-
-#define GPIO_GOUT1      (GPIO_OUTPUT | GPIO_OUTPUT_ZERO | IOMUX_GOUT_DEFAULT | \
-                         GPIO_PORT1 | GPIO_PIN19)
-
-#define GPIO_GOUT2      (GPIO_OUTPUT | GPIO_OUTPUT_ZERO | IOMUX_GOUT_DEFAULT | \
-                         GPIO_PIN18 | GPIO_PORT1)
-
-#define GPIO_GOUT3      (GPIO_OUTPUT | GPIO_OUTPUT_ZERO | IOMUX_GOUT_DEFAULT | \
-                         GPIO_PIN10 | GPIO_PORT1)
-
-#define GPIO_GOUT4      (GPIO_OUTPUT | GPIO_OUTPUT_ZERO | IOMUX_GOUT_DEFAULT | \
-                         GPIO_PIN9 | GPIO_PORT1)
-#endif
-
-/* USB OTG ID Pin： GPIO_AD_B1_02 */
-
-#define GPIO_USBOTG_ID  (GPIO_USB_OTG1_ID_1 | IOMUX_USBOTG_ID_DEFAULT)      /* AD_B1_02 */
 
 /****************************************************************************
  * Public Types
@@ -185,69 +92,11 @@ int imxrt_bringup(void);
  * Name: imxrt_spidev_initialize
  *
  * Description:
- *   Called to configure SPI chip select GPIO pins for the i.MXRT1050 EVK.
+ *   Called to configure SPI chip select GPIO pins for the ccx board.
  *
  ****************************************************************************/
 
 void imxrt_spidev_initialize(void);
-
-/****************************************************************************
- * Name: imxrt_mmcsd_spi_initialize
- *
- * Description:
- *   Initialize SPI-based SD card and card detect thread.
- *
- ****************************************************************************/
-
-#ifdef CONFIG_MMCSD_SPI
-int imxrt_mmcsd_spi_initialize(int minor)
-#endif
-
-/****************************************************************************
- * Name: imxrt_autoled_initialize
- *
- * Description:
- *   Initialize NuttX-controlled LED logic
- *
- * Input Parameters:
- *   None
- *
- * Returned Value:
- *   None
- *
- ****************************************************************************/
-
-#ifdef CONFIG_ARCH_LEDS
-void imxrt_autoled_initialize(void);
-#endif
-
-/****************************************************************************
- * Name: imxrt_gpio_initialize
- *
- * Description:
- *   Initialize GPIO drivers for use with /apps/examples/gpio
- *
- ****************************************************************************/
-
-#ifdef CONFIG_DEV_GPIO
-int imxrt_gpio_initialize(void);
-#endif
-
-/****************************************************************************
- * Name: imxrt_can_setup
- *
- * Description:
- *  Initialize CAN and register the CAN device
- *
- ****************************************************************************/
-
-#ifdef CONFIG_IMXRT_FLEXCAN
-int imxrt_can_setup(void);
-#endif
-
-#if defined(CONFIG_IMXRT_USBOTG) || defined(CONFIG_USBHOST)
-int imxrt_usbhost_initialize(void);
-#endif
 
 #endif /* __ASSEMBLY__ */
 #endif /* __BOARDS_ARM_IMXRT_CCX_SRC_CCX_H */
