@@ -17,8 +17,7 @@ https://aur.archlinux.org/packages/kconfig-frontends/
 
 Build arm-none-eabi toolchain from sources.\
 You can use this script as a guide:\
-https://gist.github.com/CFD2/75cae9c7c00bc7ea0cf77ef32d74b30e
-(@TODO: find a better place to store this gist)
+https://github.com/ccxtechnologies/nuttx/blob/master/tools/arm-toolchain/arm-none-eabi-gcc.sh
 
 
 # INSTALLATION
@@ -70,6 +69,11 @@ Inside menuconfig navigate to:
 
     System Type ->
       Select "Use DTCM" and press "y" to enable this setting.
+      Memory configuration ->
+        FlexRAM DTCM size (K): 448
+        FlexRAM ITCM size (K): 0
+      Boot memory configuration ->
+        Primary RAM Size: 458752
 
     Board Selection ->
       Select "Board LED Status Support" and press "n" to disable this
