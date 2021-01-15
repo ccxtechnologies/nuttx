@@ -45,6 +45,7 @@
 #include <debug.h>
 
 #include <syslog.h>
+#include <imxrt_lpspi.h>
 
 #include "ccx.h"
 
@@ -88,6 +89,11 @@ int imxrt_bringup(void)
       syslog(LOG_ERR, "ERROR: Failed to mount procfs at /proc: %d\n", ret);
     }
 #endif
+
+#ifdef CONFIG_IMXRT_LPSPI1
+  /* configure SPI chip select GPIO pins */
+  imxrt_spidev_initialize();
+#endif 
 
   UNUSED(ret);
   return OK;

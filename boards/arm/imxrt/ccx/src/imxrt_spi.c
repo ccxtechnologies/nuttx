@@ -55,8 +55,7 @@
 #include "imxrt_gpio.h"
 #include "ccx.h"
 
-#if defined(CONFIG_IMXRT_LPSPI1) || defined(CONFIG_IMXRT_LPSPI2) || \
-    defined(CONFIG_IMXRT_LPSPI3) || defined(CONFIG_IMXRT_LPSPI4)
+#ifdef CONFIG_IMXRT_LPSPI1
 
 /****************************************************************************
  * Public Functions
@@ -75,10 +74,6 @@ void weak_function imxrt_spidev_initialize(void)
 {
 #ifdef CONFIG_IMXRT_LPSPI1
   imxrt_config_gpio(GPIO_LPSPI1_CS); /* LPSPI1 chip select */
-  imxrt_config_gpio(GPIO_MMCSD_EN);
-#endif
-#ifdef CONFIG_IMXRT_LPSPI3
-  imxrt_config_gpio(GPIO_LPSPI3_CS); /* LPSPI3 chip select */
 #endif
 }
 
@@ -125,54 +120,6 @@ uint8_t imxrt_lpspi1status(FAR struct spi_dev_s *dev, uint32_t devid)
 }
 #endif
 
-#ifdef CONFIG_IMXRT_LPSPI2
-void imxrt_lpspi2select(FAR struct spi_dev_s *dev, uint32_t devid,
-                        bool selected)
-{
-  spiinfo("devid: %d CS: %s\n", (int)devid,
-          selected ? "assert" : "de-assert");
-
-  imxrt_gpio_write(GPIO_LPSPI2_CS, !selected);
-}
-
-uint8_t imxrt_lpspi2status(FAR struct spi_dev_s *dev, uint32_t devid)
-{
-  return 0;
-}
-#endif
-
-#ifdef CONFIG_IMXRT_LPSPI3
-void imxrt_lpspi3select(FAR struct spi_dev_s *dev, uint32_t devid,
-                        bool selected)
-{
-  spiinfo("devid: %d CS: %s\n", (int)devid,
-          selected ? "assert" : "de-assert");
-
-  imxrt_gpio_write(GPIO_LPSPI3_CS, !selected);
-}
-
-uint8_t imxrt_lpspi3status(FAR struct spi_dev_s *dev, uint32_t devid)
-{
-  return 0;
-}
-#endif
-
-#ifdef CONFIG_IMXRT_LPSPI4
-void imxrt_lpspi4select(FAR struct spi_dev_s *dev, uint32_t devid,
-                        bool selected)
-{
-  spiinfo("devid: %d CS: %s\n", (int)devid,
-          selected ? "assert" : "de-assert");
-
-  imxrt_gpio_write(GPIO_LPSPI4_CS, !selected);
-}
-
-uint8_t imxrt_lpspi4status(FAR struct spi_dev_s *dev, uint32_t devid)
-{
-  return 0;
-}
-#endif
-
 /****************************************************************************
  * Name: imxrt_lpspi1cmddata
  *
@@ -203,27 +150,5 @@ int imxrt_lpspi1cmddata(FAR struct spi_dev_s *dev, uint32_t devid, bool cmd)
   return -ENODEV;
 }
 #endif
-
-#ifdef CONFIG_IMXRT_LPSPI2
-int imxrt_lpspi2cmddata(FAR struct spi_dev_s *dev, uint32_t devid, bool cmd)
-{
-  return -ENODEV;
-}
-#endif
-
-#ifdef CONFIG_IMXRT_LPSPI3
-int imxrt_lpspi3cmddata(FAR struct spi_dev_s *dev, uint32_t devid, bool cmd)
-{
-  return -ENODEV;
-}
-#endif
-
-#ifdef CONFIG_IMXRT_LPSPI4
-int imxrt_lpspi4cmddata(FAR struct spi_dev_s *dev, uint32_t devid, bool cmd)
-{
-  return -ENODEV;
-}
-#endif
 #endif /* CONFIG_SPI_CMDDATA */
-
-#endif /* CONFIG_IMXRT_LPSPI1 || CONFIG_IMXRT_LPSPI2 */
+#endif /* CONFIG_IMXRT_LPSPI1 */
