@@ -1,4 +1,4 @@
-# Build NuttX
+# NuttX Build Instructions
 
 ## Prerequisites
 
@@ -56,6 +56,11 @@ Inside menuconfig navigate to:
 
 Press ESC-ESC to exit from menuconfig. You will be prompted to save
 changes.
+
+## Build Nuttx
+To start the building process simply type:
+
+    make
 
 ## Flashing the image onto SD Card
 
