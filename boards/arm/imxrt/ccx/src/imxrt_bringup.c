@@ -91,8 +91,16 @@ int imxrt_bringup(void)
 #endif
 
 #ifdef CONFIG_IMXRT_LPSPI1
+  struct spi_dev_s *spi;
   /* configure SPI chip select GPIO pins */
   imxrt_spidev_initialize();
+  /* initialize the selected LPSPI1 bus */
+  spi = imxrt_lpspibus_initialize(0);
+  if (spi == NULL)
+    {
+      spierr("ERROR: Failed to initialize SPI port 0\n");
+      return -ENODEV;
+    }
 #endif 
 
   UNUSED(ret);
