@@ -1,5 +1,5 @@
 /****************************************************************************
- * boards/arm/imxrt/ccx/src/imxrt_flexspi_nor_boot.h
+ * boards/arm/imxrt/ccx/src/imxrt_boot_mem_config.h
  *
  *   Copyright (C) 2018 Gregory Nutt. All rights reserved.
  *   Authors: Ivan Ucherdzhiev <ivanucherdjiev@gmail.com>
@@ -34,8 +34,8 @@
  *
  ****************************************************************************/
 
-#ifndef __BOARDS_ARM_IMXRT_CCX_SRC_IMXRT_FLEXSPI_NOR_BOOT_H
-#define __BOARDS_ARM_IMXRT_CCX_SRC_IMXRT_FLEXSPI_NOR_BOOT_H
+#ifndef __BOARDS_ARM_IMXRT_CCX_SRC_IMXRT_BOOT_MEM_CONFIG_H
+#define __BOARDS_ARM_IMXRT_CCX_SRC_IMXRT_BOOT_MEM_CONFIG_H
 
 /****************************************************************************
  * Included Files
@@ -82,18 +82,6 @@
 #define ROM_BOOTLOADER_OCRAM_RES    0x0
 #define OCRAM_BASE                  (0x20000000 + ROM_BOOTLOADER_OCRAM_RES)
 #define OCRAM_END                   (OCRAM_BASE + (448 * 1024))
-#if 0
-#define SCLK 1
-#if defined(CONFIG_BOOT_RUNFROMFLASH)
-#  define IMAGE_DEST                FLASH_BASE
-#  define IMAGE_DEST_END            FLASH_END
-#  define IMAGE_DEST_OFFSET         0
-#else
-#  define IMAGE_DEST                OCRAM_BASE
-#  define IMAGE_DEST_END            OCRAM_END
-#  define IMAGE_DEST_OFFSET         IVT_SIZE
-#endif
-#endif
 
 #  define IMAGE_DEST                OCRAM_BASE
 #  define IMAGE_DEST_END            OCRAM_END
@@ -177,4 +165,4 @@ extern const struct boot_data_s g_boot_data;
 extern  const uint8_t g_dcd_data[];
 extern  const uint32_t  _vectors[];
 
-#endif /* __BOARDS_ARM_IMXRT_CCX_SRC_IMXRT_FLEXSPI_NOR_BOOT_H */
+#endif /* __BOARDS_ARM_IMXRT_CCX_SRC_IMXRT_BOOT_MEM_CONFIG_H */

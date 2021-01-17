@@ -46,7 +46,7 @@
 #include "imxrt_start.h"
 #include "ccx.h"
 #include "arm_arch.h"
-#include "imxrt_flexspi_nor_boot.h"
+#include "imxrt_boot_mem_config.h"
 
 /****************************************************************************
  * Public Functions

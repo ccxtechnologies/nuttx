@@ -1,5 +1,5 @@
 /****************************************************************************
- * boards/arm/imxrt/ccx/src/imxrt_flexspi_nor_boot.c
+ * boards/arm/imxrt/ccx/src/imxrt_boot_mem_config.c
  *
  *   Copyright (C) 2018 Gregory Nutt. All rights reserved.
  *   Author: Ivan Ucherdzhiev <ivanucherdjiev@gmail.com>
@@ -37,7 +37,7 @@
  * Included Files
  ****************************************************************************/
 
-#include "imxrt_flexspi_nor_boot.h"
+#include "imxrt_boot_mem_config.h"
 
 /****************************************************************************
  * Public Data
