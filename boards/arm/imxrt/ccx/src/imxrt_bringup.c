@@ -95,10 +95,10 @@ int imxrt_bringup(void)
   /* configure SPI chip select GPIO pins */
   imxrt_spidev_initialize();
   /* initialize the selected LPSPI1 bus */
-  spi = imxrt_lpspibus_initialize(0);
+  spi = imxrt_lpspibus_initialize(1);
   if (spi == NULL)
     {
-      spierr("ERROR: Failed to initialize SPI port 0\n");
+      spierr("ERROR: Failed to initialize SPI port 1\n");
       return -ENODEV;
     }
 #endif 
