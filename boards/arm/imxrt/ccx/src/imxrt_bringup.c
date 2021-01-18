@@ -101,6 +101,10 @@ int imxrt_bringup(void)
       spierr("ERROR: Failed to initialize SPI port 1\n");
       return -ENODEV;
     }
+  else
+    {
+      spi_register(spi, 1);
+    }
 #endif 
 
   UNUSED(ret);
