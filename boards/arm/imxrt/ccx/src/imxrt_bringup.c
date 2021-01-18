@@ -45,6 +45,8 @@
 #include <debug.h>
 
 #include <syslog.h>
+#include <nuttx/spi/spi.h>
+#include <nuttx/spi/spi_transfer.h>
 #include <imxrt_lpspi.h>
 
 #include "ccx.h"
