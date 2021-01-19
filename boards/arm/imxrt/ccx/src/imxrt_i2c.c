@@ -75,7 +75,7 @@ static void imxrt_i2c_register(int bus)
  * Name: imxrt_i2c_setup
  *
  * Description:
- *  Choose which I2C driver should be initialize
+ *  Setup I2C device
  *
  ****************************************************************************/
 

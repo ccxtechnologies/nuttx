@@ -48,6 +48,8 @@
 #include <nuttx/spi/spi.h>
 #include <nuttx/spi/spi_transfer.h>
 #include <imxrt_lpspi.h>
+#include <nuttx/i2c/i2c_master.h>
+#include <imxrt_lpi2c.h>
 
 #include "ccx.h"
 
@@ -107,7 +109,11 @@ int imxrt_bringup(void)
     {
       spi_register(spi, 1);
     }
-#endif 
+#endif
+
+#if defined(CONFIG_I2C_DRIVER)
+  imxrt_i2c_setup();
+#endif
 
   UNUSED(ret);
   return OK;

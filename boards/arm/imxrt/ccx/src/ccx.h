@@ -98,5 +98,17 @@ int imxrt_bringup(void);
 
 void imxrt_spidev_initialize(void);
 
+/****************************************************************************
+ * Name: imxrt_i2c_setup
+ *
+ * Description:
+ *  Setup I2C device
+ *
+ ****************************************************************************/
+
+#ifdef CONFIG_IMXRT_LPI2C
+void imxrt_i2c_setup(void);
+#endif
+
 #endif /* __ASSEMBLY__ */
 #endif /* __BOARDS_ARM_IMXRT_CCX_SRC_CCX_H */
