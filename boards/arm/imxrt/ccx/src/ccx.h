@@ -62,7 +62,7 @@
                          IOMUX_SPEED_MEDIUM | IOMUX_PULL_DOWN_100K | \
                          _IOMUX_PULL_ENABLE)
 #define GPIO_LPSPI1_CS  (GPIO_OUTPUT | GPIO_OUTPUT_ONE | \
-                         GPIO_PORT4 | GPIO_PIN31 | IOMUX_LPSPI1_CS)
+                         GPIO_PORT4 | GPIO_PIN30 | IOMUX_LPSPI1_CS)
 
 
 
