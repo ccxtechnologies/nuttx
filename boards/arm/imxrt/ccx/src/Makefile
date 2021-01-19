@@ -47,4 +47,8 @@ ifeq ($(CONFIG_IMXRT_LPSPI),y)
 CSRCS += imxrt_spi.c
 endif
 
+ifeq ($(CONFIG_IMXRT_LPI2C),y)
+CSRCS += imxrt_i2c.c
+endif
+
 include $(TOPDIR)/boards/Board.mk
