@@ -64,6 +64,13 @@
 #define GPIO_LPSPI1_CS  (GPIO_OUTPUT | GPIO_OUTPUT_ONE | \
                          GPIO_PORT4 | GPIO_PIN30 | IOMUX_LPSPI1_CS)
 
+/* ADC_RESET1: B11 GPIO_B1_01 */
+
+#define IOMUX_ADC_RESET1 (IOMUX_SLEW_FAST | IOMUX_DRIVE_50OHM | \
+                          IOMUX_SPEED_MEDIUM | IOMUX_PULL_DOWN_100K | \
+                           _IOMUX_PULL_ENABLE)
+#define GPIO_ADC_RESET1 (GPIO_OUTPUT | GPIO_OUTPUT_ONE | \
+                         GPIO_PORT2 | GPIO_PIN17 | IOMUX_ADC_RESET1)
 
 
 /****************************************************************************
