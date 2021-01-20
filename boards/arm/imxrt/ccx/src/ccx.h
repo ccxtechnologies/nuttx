@@ -56,6 +56,19 @@
  * Pre-processor Definitions
  ****************************************************************************/
 
+/* i.MX RT 1064-CCX GPIO Pin Definitions ************************************/
+
+/* Ethernet */
+/* Ethernet Reset:  GPIO_B1_00
+ *
+ * The #RST uses inverted logic.  The initial value of zero will put the
+ * PHY into the reset state.
+ */
+
+#define GPIO_ENET_RST   (GPIO_OUTPUT | GPIO_OUTPUT_ZERO | \
+                         GPIO_PORT2 | GPIO_PIN16 | IOMUX_ENET_RST_DEFAULT) /* B1_00 */
+
+
 /* LPSPI1 CS:  GPIO_EMC_30 */
 
 #define IOMUX_LPSPI1_CS (IOMUX_SLEW_FAST | IOMUX_DRIVE_50OHM | \
