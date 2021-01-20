@@ -72,7 +72,13 @@
 #define GPIO_ADC_RESET1 (GPIO_OUTPUT | GPIO_OUTPUT_ONE | \
                          GPIO_PORT2 | GPIO_PIN17 | IOMUX_ADC_RESET1)
 
+/* ADC_RESET2: N4 GPIO_SD_B1_09 */
 
+#define IOMUX_ADC_RESET2 (IOMUX_SLEW_FAST | IOMUX_DRIVE_50OHM | \
+                          IOMUX_SPEED_MEDIUM | IOMUX_PULL_DOWN_100K | \
+                           _IOMUX_PULL_ENABLE)
+#define GPIO_ADC_RESET2 (GPIO_OUTPUT | GPIO_OUTPUT_ONE | \
+                         GPIO_PORT3 | GPIO_PIN9 | IOMUX_ADC_RESET2)
 /****************************************************************************
  * Public Types
  ****************************************************************************/

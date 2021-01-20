@@ -114,6 +114,9 @@ int imxrt_bringup(void)
   /* Initialize ADC1 @ 0x48 on LPI2C2 */
   imxrt_config_gpio(GPIO_ADC_RESET1);
 
+  /* Initialize ADC2 @ 0x49 on LPI2C2 */
+  imxrt_config_gpio(GPIO_ADC_RESET2);
+
 #if defined(CONFIG_I2C_DRIVER)
   imxrt_i2c_setup();
 #endif
