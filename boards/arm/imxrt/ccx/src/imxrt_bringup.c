@@ -122,6 +122,11 @@ int imxrt_bringup(void)
   imxrt_i2c_setup();
 #endif
 
+  /* config LEDs */
+  imxrt_config_gpio(GPIO_LED_RED);
+  imxrt_config_gpio(GPIO_LED_BLUE);
+
+
   UNUSED(ret);
   return OK;
 }

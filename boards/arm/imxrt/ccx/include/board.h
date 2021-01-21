@@ -242,6 +242,7 @@
 #define GPIO_ENET_TX_CLK     (GPIO_ENET_REF_CLK_2|\
                               IOMUX_ENET_TX_CLK_DEFAULT)                  /* GPIO_B1_10 */
 #define GPIO_ENET_TX_EN      (GPIO_ENET_TX_EN_1|IOMUX_ENET_EN_DEFAULT)    /* GPIO_B1_09 */
+#undef CONFIG_ARCH_PHY_INTERRUPT
 
 /* PIO Disambiguation *******************************************************/
 

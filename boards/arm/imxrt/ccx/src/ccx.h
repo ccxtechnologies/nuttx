@@ -58,6 +58,18 @@
 
 /* i.MX RT 1064-CCX GPIO Pin Definitions ************************************/
 
+/* LEDs
+*
+* Only RED and BLUE LEDs can be controlled by software
+* RED: GPIO_SD_B1_07
+* BLUE: GPIO_SD_B1_08
+*/
+#define GPIO_LED_RED        (GPIO_OUTPUT | IOMUX_LED_DEFAULT | \
+                         GPIO_OUTPUT_ZERO | GPIO_PORT3 | GPIO_PIN7)  /* SD_B1_07 */
+
+#define GPIO_LED_BLUE        (GPIO_OUTPUT | IOMUX_LED_DEFAULT | \
+                         GPIO_OUTPUT_ZERO | GPIO_PORT3 | GPIO_PIN8)  /* SD_B1_08 */
+
 /* Ethernet */
 /* Ethernet Reset:  GPIO_B1_00
  *
