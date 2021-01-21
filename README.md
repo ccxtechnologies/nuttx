@@ -35,27 +35,7 @@ Execute:
 
     cd nuttx/
     ./tools/configure.sh -l ccx:nsh
-    make menuconfig
-
-Inside menuconfig navigate to:
-
-    Build Setup -> Binary Output Formats ->
-      Select "Raw Binary format" and press "y" to enable this setting.
-
-    System Type ->
-      Select "Use DTCM" and press "y" to enable this setting.
-      Memory configuration ->
-        FlexRAM DTCM size (K): 448
-        FlexRAM ITCM size (K): 0
-      Boot memory configuration ->
-        Primary RAM Size: 458752
-
-    Board Selection ->
-      Select "Board LED Status Support" and press "n" to disable this
-      setting.
-
-Press ESC-ESC to exit from menuconfig. You will be prompted to save
-changes.
+    make olddefconfig
 
 ## Build Nuttx
 To start the building process simply type:
