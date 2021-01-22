@@ -70,6 +70,18 @@
 #define GPIO_LED_BLUE        (GPIO_OUTPUT | IOMUX_LED_DEFAULT | \
                          GPIO_OUTPUT_ZERO | GPIO_PORT3 | GPIO_PIN8)  /* SD_B1_08 */
 
+
+/* Discretes
+*
+*
+*
+*/
+#define BOARD_NGPIOIN   1 /* Amount of GPIO Input pins */
+#define BOARD_NGPIOOUT  0 /* Amount of GPIO Output pins */
+#define GPIO_GP_INPUT1        (GPIO_INPUT | IOMUX_GOUT_DEFAULT | \
+                         GPIO_PORT4 | GPIO_PIN16)  /* EMC_16 */
+
+
 /* Ethernet */
 /* Ethernet Reset:  GPIO_B1_00
  *
@@ -146,6 +158,18 @@ void imxrt_spidev_initialize(void);
 
 #ifdef CONFIG_IMXRT_LPI2C
 void imxrt_i2c_setup(void);
+#endif
+
+/****************************************************************************
+ * Name: imxrt_gpio_initialize
+ *
+ * Description:
+ *   Initialize GPIO drivers for use with /apps/examples/gpio
+ *
+ ****************************************************************************/
+
+#ifdef CONFIG_DEV_GPIO
+int imxrt_gpio_initialize(void);
 #endif
 
 #endif /* __ASSEMBLY__ */

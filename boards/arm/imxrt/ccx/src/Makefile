@@ -55,4 +55,8 @@ ifeq ($(CONFIG_IMXRT_LPI2C),y)
 CSRCS += imxrt_i2c.c
 endif
 
+ifeq ($(CONFIG_DEV_GPIO),y)
+CSRCS += imxrt_gpio.c
+endif
+
 include $(TOPDIR)/boards/Board.mk
