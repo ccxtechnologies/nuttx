@@ -128,4 +128,24 @@ int imxrt_phy_boardinitialize(int intf)
   return OK;
 }
 
+int arch_phy_irq(FAR const char *intf, xcpt_t handler, void *arg,
+                 phy_enable_t *enable)
+{
+  DEBUGASSERT(intf);
+
+  ninfo("%s: handler=%p\n", intf, handler);
+  phyinfo("EMAC: devname=%s\n", IMXRT_ENET_DEVNAME);
+
+  if (handler == NULL)
+    {
+      return OK;
+    }
+  else
+    {
+      //throw error
+      nerr("ERROR: Unsupported interface: %s\n", intf);
+      return -EINVAL;
+    }
+}
+
 #endif /* CONFIG_IMXRT_ENET */
