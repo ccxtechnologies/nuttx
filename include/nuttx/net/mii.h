@@ -89,6 +89,14 @@
 #define MII_DP83840_10BTSR           0x1b      /* 10BASE-T status register */
 #define MII_DP83840_10BTCR           0x1c      /* 10BASE-T configuration register */
 
+/* Holt Integrated Circuits HI-5200: 0x9-0x13, 0x16-0x1a, 0x1c-0x1d reserved */
+
+#define MII_HI5200_MIICTRL           0x14      /* MII Control register */
+#define MII_HI5200_RXERR             0x15      /* RXER Counter */
+#define MII_HI5200_INTCS             0x1b      /* Interrupt control/status */
+#define MII_HI5200_PHYCTRL1          0x1e      /* PHY Control 1 */
+#define MII_HI5200_PHYCTRL2          0x1f      /* PHY Control 2 */
+
 /* Am79c874: 0x08-0x0f, 0x14, 0x16, 0x19-0x1f reserved */
 
 #define MII_AM79C874_NPADVERTISE     0x07      /* Auto-negotiation next page advertisement */
@@ -456,6 +464,67 @@
 
 #define MII_PHYID1_LAN8742A          0x0007    /* ID1 value for LAN8742A */
 #define MII_PHYID2_LAN8742A          0xc130    /* ID2 value for LAN8742A */
+
+/* Holt Integrated Circuits HI-5200-specific register bit settings ***********/
+
+/*  Holt Integrated Circuits HI-5200 MII ID1/2 register bits */
+
+#define MII_PHYID1_HI5200             0x0022    /* ID1 value for HI-5200 */
+#define MII_PHYID2_HI5200             0x1513    /* ID2 value for HI-5200 */
+
+/* Holt Integrated Circuits HI-5200 Register 0x1b: Interrupt control/status */
+
+#define MII_HI5200_INT_JEN          (1 << 15) /* Jabber interrupt enable */
+#define MII_HI5200_INT_REEN         (1 << 14) /* Receive error interrupt enable */
+#define MII_HI5200_INT_PREN         (1 << 13) /* Page received interrupt enable */
+#define MII_HI5200_INT_PDFEN        (1 << 12) /* Parallel detect fault interrupt enable */
+#define MII_HI5200_INT_LPAEN        (1 << 11) /* Link partner acknowledge interrupt enable */
+#define MII_HI5200_INT_LDEN         (1 << 10) /* Link down fault interrupt enable */
+#define MII_HI5200_INT_RFEN         (1 << 9)  /* Remote fault interrupt enable */
+#define MII_HI5200_INT_LUEN         (1 << 8)  /* Link up interrupt enable */
+
+#define MII_HI5200_INT_J            (1 << 7)  /* Jabber interrupt */
+#define MII_HI5200_INT_RE           (1 << 6)  /* Receive error interrupt */
+#define MII_HI5200_INT_PR           (1 << 5)  /* Page received interrupt */
+#define MII_HI5200_INT_PDF          (1 << 4)  /* Parallel detect fault interrupt */
+#define MII_HI5200_INT_LPA          (1 << 3)  /* Link partner acknowledge interrupt */
+#define MII_HI5200_INT_LD           (1 << 2)  /* Link down fault interrupt */
+#define MII_HI5200_INT_RF           (1 << 1)  /* Remote fault interrupt */
+#define MII_HI5200_INT_LU           (1 << 0)  /* Link up interrupt */
+
+/* Holt Integrated Circuits HI-5200 Register 0x1e: PHY Control 1 */
+
+#define MII_HI5200_PHYCTRL1_POLARITY        (1 << 13)  /* Bit 13:  Polarity status */
+                                               /* Bit 12:  Reserved */
+#define MII_HI5200_PHYCTRL1_MDIX            (1 << 11)  /* Bit 11:  MDI/MDI-X state */
+                                               /* Bit 10-8: Reserved */
+#define MII_HI5200_PHYCTRL1_LOOPBCK         (1 << 7)   /* Bit 7 : Remote loopback enabled */
+                                               /* Bit 6-0: Reserved */
+
+/* Holt Integrated Circuits HI-5200 Register 0x1f: PHY Control 2 */
+
+#define MII_HI5200_PHYCTRL2_MDIX            (1 << 15) /* Bit 15: Micrel/HP MDI/MDI-X state */
+#define MII_HI5200_PHYCTRL2_MDIX_SEL        (1 << 14) /* Bit 14: MDI/MDI-X select */
+#define MII_HI5200_PHYCTRL2_PSDIS           (1 << 13) /* Bit 13: Pair swap disable */
+#define MII_HI5200_PHYCTRL2_ENERGYDET       (1 << 12) /* Bit 12: Energy detect */
+#define MII_HI5200_PHYCTRL2_FORCE           (1 << 11) /* Bit 11: Force link */
+#define MII_HI5200_PHYCTRL2_PWRSAVE         (1 << 10) /* Bit 10: Power saving */
+#define MII_HI5200_PHYCTRL2_INTLVL          (1 << 9)  /* Bit 9:  Interrupt level */
+#define MII_HI5200_PHYCTRL2_ENJABBER        (1 << 8)  /* Bit 8:  Enable jabber */
+#define MII_HI5200_PHYCTRL2_ANEGCOMP        (1 << 7)  /* Bit 7:  Auto-negotiation complete */
+#define MII_HI5200_PHYCTRL2_ENPAUSE         (1 << 6)  /* Bit 6:  Enable pause */
+#define MII_HI5200_PHYCTRL2_ISOLATE         (1 << 5)  /* Bit 5:  PHY isolate */
+#define MII_HI5200_PHYCTRL2_MODE_SHIFT      (2)       /* Bits 2-4: Operation mode */
+#define MII_HI5200_PHYCTRL2_MODE_MASK       (7 << MII_HI5200_PHYCTRL2_MODE_SHIFT)
+#  define MII_HI5200_PHYCTRL2_MODE_BUSY     (0 << MII_HI5200_PHYCTRL2_MODE_SHIFT) /* Still in autonegotiation */
+#  define MII_HI5200_PHYCTRL2_MODE_10HDX    (1 << MII_HI5200_PHYCTRL2_MODE_SHIFT) /* 10Base-T half-duplex */
+#  define MII_HI5200_PHYCTRL2_MODE_100HDX   (2 << MII_HI5200_PHYCTRL2_MODE_SHIFT) /* 100Base-T half-duplex */
+#  define MII_HI5200_PHYCTRL2_MODE_DUPLEX   (4 << MII_HI5200_PHYCTRL2_MODE_SHIFT) /* Full duplex */
+#  define MII_HI5200_PHYCTRL2_MODE_10FDX    (5 << MII_HI5200_PHYCTRL2_MODE_SHIFT) /* 10Base-T full-duplex */
+#  define MII_HI5200_PHYCTRL2_MODE_100FDX   (6 << MII_HI5200_PHYCTRL2_MODE_SHIFT) /* 100Base-T full-duplex */
+
+#define MII_HI5200_PHYCTRL2_SEQTEST         (1 << 1)  /* Bit 1:  Enable SQE test */
+#define MII_HI5200_PHYCTRL2_DISDS           (1 << 0)  /* Bit 1:  Disable data scrambling */
 
 /* Am79c874-specific register bit settings **********************************/
 

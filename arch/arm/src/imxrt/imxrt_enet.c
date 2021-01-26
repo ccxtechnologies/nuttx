@@ -201,6 +201,15 @@
 #  define BOARD_PHY_10BASET(s)  (((s) & MII_PHYCTRL1_MODE_10HDX) != 0)
 #  define BOARD_PHY_100BASET(s) (((s) & MII_PHYCTRL1_MODE_100HDX) != 0)
 #  define BOARD_PHY_ISDUPLEX(s) (((s) & MII_PHYCTRL1_MODE_DUPLEX) != 0)
+#elif defined(CONFIG_ETH0_PHY_HI5200)
+#  define BOARD_PHY_NAME        "HI5200"
+#  define BOARD_PHYID1          MII_PHYID1_HI5200
+#  define BOARD_PHYID2          MII_PHYID2_HI5200
+#  define BOARD_PHY_STATUS      MII_HI5200_PHYCTRL2 //rework this
+#  define BOARD_PHY_ADDR        (1)
+#  define BOARD_PHY_10BASET(s)  (((s) & MII_HI5200_PHYCTRL2_MODE_10HDX) != 0)
+#  define BOARD_PHY_100BASET(s) (((s) & MII_HI5200_PHYCTRL2_MODE_100HDX) != 0)
+#  define BOARD_PHY_ISDUPLEX(s) (((s) & MII_HI5200_PHYCTRL2_MODE_DUPLEX) != 0)
 #elif defined(CONFIG_ETH0_PHY_LAN8720)
 #  define BOARD_PHY_NAME        "LAN8720"
 #  define BOARD_PHYID1          MII_PHYID1_LAN8720
@@ -1868,6 +1877,24 @@ static int imxrt_phyintenable(struct imxrt_driver_s *priv)
     }
 
   return ret;
+#elif defined(CONFIG_ETH0_PHY_HI5200)
+  uint16_t phyval;
+  int ret;
+
+  /* Read the interrupt status register in order to clear any pending
+   * interrupts
+   */
+
+  ret = imxrt_readmii(priv, priv->phyaddr, MII_HI5200_INTCS, &phyval);
+  if (ret == OK)
+    {
+      /* Enable link up/down interrupts */
+
+      ret = imxrt_writemii(priv, priv->phyaddr, MII_HI5200_INTCS,
+                           (MII_HI5200_INT_LDEN | MII_HI5200_INT_LUEN));
+    }
+
+  return ret;
 #else
 #  error Unrecognized PHY
   return -ENOSYS;
@@ -2161,6 +2188,17 @@ static inline int imxrt_initphy(struct imxrt_driver_s *priv, bool renogphy)
 
       imxrt_writemii(priv, phyaddr, MII_KSZ8081_PHYCTRL2,
                      (phydata | (1 << 4)));
+
+      imxrt_writemii(priv, phyaddr, MII_ADVERTISE,
+                     MII_ADVERTISE_100BASETXFULL |
+                     MII_ADVERTISE_100BASETXHALF |
+                     MII_ADVERTISE_10BASETXFULL |
+                     MII_ADVERTISE_10BASETXHALF |
+                     MII_ADVERTISE_CSMA);
+
+#elif defined (CONFIG_ETH0_PHY_HI5200)
+      /* Reset PHY */
+      imxrt_writemii(priv, phyaddr, MII_MCR, MII_MCR_RESET);
 
       imxrt_writemii(priv, phyaddr, MII_ADVERTISE,
                      MII_ADVERTISE_100BASETXFULL |
