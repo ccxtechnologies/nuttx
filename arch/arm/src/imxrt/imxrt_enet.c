@@ -205,7 +205,7 @@
 #  define BOARD_PHY_NAME        "HI5200"
 #  define BOARD_PHYID1          MII_PHYID1_HI5200
 #  define BOARD_PHYID2          MII_PHYID2_HI5200
-#  define BOARD_PHY_STATUS      MII_HI5200_PHYCTRL2 //rework this
+#  define BOARD_PHY_STATUS      MII_HI5200_PHYCTRL2
 #  define BOARD_PHY_ADDR        (1)
 #  define BOARD_PHY_10BASET(s)  (((s) & MII_HI5200_PHYCTRL2_MODE_10HDX) != 0)
 #  define BOARD_PHY_100BASET(s) (((s) & MII_HI5200_PHYCTRL2_MODE_100HDX) != 0)
