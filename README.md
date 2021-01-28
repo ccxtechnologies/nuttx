@@ -27,7 +27,7 @@ Clone the core NuttX RTOS and apps:
     mkdir nuttxspace
     cd nuttxspace/
     git clone https://github.com/ccxtechnologies/nuttx.git nuttx
-    git clone https://github.com/apache/incubator-nuttx-apps.git apps
+    git clone https://github.com/ccxtechnologies/nuttx-apps.git apps
 
 ## Configuring NuttX
 
