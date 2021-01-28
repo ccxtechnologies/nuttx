@@ -3,6 +3,7 @@
 # @TODO: check for dependencies
 # @TODO: impelement scenario for separate installation of binutils instead of installing everything from scratch.
 #Dependencies (Ubuntu):
+#build-essential
 #libgmp-dev
 #libmpfr-dev
 #libmpc-dev
