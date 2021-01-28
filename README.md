@@ -34,10 +34,10 @@ Clone the core NuttX RTOS and apps:
 Execute:
 
     cd nuttx/
-    ./tools/configure.sh -l ccx:nsh
+    ./tools/configure.sh -l ccx:netnsh
     make olddefconfig
 
-## Build Nuttx
+## Building Nuttx
 To start the building process simply type:
 
     make
