@@ -50,3 +50,4 @@ uImage
 /external
 /.cache/
 /.ccls-cache/
+/.vscode/
