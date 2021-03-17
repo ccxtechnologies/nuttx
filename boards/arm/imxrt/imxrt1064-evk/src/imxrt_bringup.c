@@ -217,7 +217,7 @@ int imxrt_bringup(void)
   ret = imxrt_netinitialize(0);
 #endif
 
-#ifdef CONFIG_IMXRT_FLEXCAN
+#if defined(CONFIG_IMXRT_FLEXCAN) && defined(CONFIG_NETDEV_LATEINIT)
   ret = imxrt_can_setup();
   if (ret < 0)
     {
