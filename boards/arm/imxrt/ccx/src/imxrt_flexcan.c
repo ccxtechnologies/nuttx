@@ -31,6 +31,8 @@
 #include <nuttx/can/can.h>
 
 #include "imxrt_flexcan.h"
+#include "imxrt_gpio.h"
+
 #include "ccx.h"
 
 #ifdef CONFIG_IMXRT_FLEXCAN
@@ -56,8 +58,10 @@ int imxrt_can_setup(void)
 #endif
 
 #ifdef CONFIG_IMXRT_FLEXCAN3
+  imxrt_config_gpio(GPIO_FLEXCAN3_A_EN);
+  imxrt_gpio_write(GPIO_FLEXCAN3_A_EN, 1);
+  
   /* Call arm_caninitialize() to get an instance of the CAN interface */
-
   ret = imxrt_caninitialize(3);
   if (ret < 0)
     {

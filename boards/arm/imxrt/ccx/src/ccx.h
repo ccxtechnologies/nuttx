@@ -116,6 +116,14 @@
                            _IOMUX_PULL_ENABLE)
 #define GPIO_ADC_RESET2 (GPIO_OUTPUT | GPIO_OUTPUT_ONE | \
                          GPIO_PORT3 | GPIO_PIN9 | IOMUX_ADC_RESET2)
+
+/* FlexCAN3 A_EN: GPIO_SD_B1_03 */
+
+#define IOMUX_FLEXCAN3_A_EN (IOMUX_SLEW_FAST | IOMUX_DRIVE_50OHM | \
+                         IOMUX_SPEED_MEDIUM | IOMUX_PULL_DOWN_100K | \
+                         _IOMUX_PULL_ENABLE)
+#define GPIO_FLEXCAN3_A_EN  (GPIO_OUTPUT | GPIO_OUTPUT_ZERO | \
+                         GPIO_PORT3 | GPIO_PIN3 | IOMUX_FLEXCAN3_A_EN)
 /****************************************************************************
  * Public Types
  ****************************************************************************/
