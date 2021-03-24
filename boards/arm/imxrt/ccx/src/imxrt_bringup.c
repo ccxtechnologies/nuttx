@@ -122,6 +122,16 @@ int imxrt_bringup(void)
   imxrt_i2c_setup();
 #endif
 
+
+#if defined(CONFIG_IMXRT_FLEXCAN) && defined(CONFIG_NETDEV_LATEINIT)
+  ret = imxrt_can_setup();
+  if (ret < 0)
+    {
+      syslog(LOG_ERR, "ERROR: imxrt_can_setup() failed: %d\n", ret);
+      return ret;
+    }
+#endif
+
   /* config LEDs */
   imxrt_config_gpio(GPIO_LED_RED);
   imxrt_config_gpio(GPIO_LED_BLUE);
