@@ -124,6 +124,16 @@
                          _IOMUX_PULL_ENABLE)
 #define GPIO_FLEXCAN3_A_EN  (GPIO_OUTPUT | GPIO_OUTPUT_ZERO | \
                          GPIO_PORT3 | GPIO_PIN3 | IOMUX_FLEXCAN3_A_EN)
+
+/* FlexCAN3 B_EN: GPIO_SD_B1_03 */
+
+#define IOMUX_FLEXCAN3_B_EN (IOMUX_SLEW_FAST | IOMUX_DRIVE_50OHM | \
+                         IOMUX_SPEED_MEDIUM | IOMUX_PULL_DOWN_100K | \
+                         _IOMUX_PULL_ENABLE)
+#define GPIO_FLEXCAN3_B_EN  (GPIO_OUTPUT | GPIO_OUTPUT_ZERO | \
+                         GPIO_PORT3 | GPIO_PIN6 | IOMUX_FLEXCAN3_B_EN)
+
+
 /****************************************************************************
  * Public Types
  ****************************************************************************/
@@ -166,6 +176,18 @@ void imxrt_spidev_initialize(void);
 
 #ifdef CONFIG_IMXRT_LPI2C
 void imxrt_i2c_setup(void);
+#endif
+
+/****************************************************************************
+ * Name: imxrt_can_setup
+ *
+ * Description:
+ *  Setup FlexCAN device
+ *
+ ****************************************************************************/
+
+#if defined(CONFIG_IMXRT_FLEXCAN) && defined(CONFIG_NETDEV_LATEINIT)
+int imxrt_can_setup(void);
 #endif
 
 /****************************************************************************

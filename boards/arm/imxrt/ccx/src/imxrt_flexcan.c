@@ -58,8 +58,10 @@ int imxrt_can_setup(void)
 #endif
 
 #ifdef CONFIG_IMXRT_FLEXCAN3
-  imxrt_config_gpio(GPIO_FLEXCAN3_A_EN);
-  imxrt_gpio_write(GPIO_FLEXCAN3_A_EN, 1);
+  // imxrt_config_gpio(GPIO_FLEXCAN3_A_EN);
+  // imxrt_gpio_write(GPIO_FLEXCAN3_A_EN, 1);
+  imxrt_config_gpio(GPIO_FLEXCAN3_B_EN);
+  imxrt_gpio_write(GPIO_FLEXCAN3_B_EN, 1);
   
   /* Call arm_caninitialize() to get an instance of the CAN interface */
   ret = imxrt_caninitialize(3);

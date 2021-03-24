@@ -51,6 +51,7 @@
 #include <nuttx/i2c/i2c_master.h>
 #include <imxrt_lpi2c.h>
 
+#include "imxrt_enet.h"
 #include "ccx.h"
 
 #include <arch/board/board.h>  /* Must always be included last */
@@ -122,6 +123,9 @@ int imxrt_bringup(void)
   imxrt_i2c_setup();
 #endif
 
+#if defined(CONFIG_IMXRT_ENET) && defined(CONFIG_NETDEV_LATEINIT)
+  ret = imxrt_netinitialize(0);
+#endif
 
 #if defined(CONFIG_IMXRT_FLEXCAN) && defined(CONFIG_NETDEV_LATEINIT)
   ret = imxrt_can_setup();
