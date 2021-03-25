@@ -133,6 +133,9 @@
 #define GPIO_FLEXCAN3_B_EN  (GPIO_OUTPUT | GPIO_OUTPUT_ZERO | \
                          GPIO_PORT3 | GPIO_PIN6 | IOMUX_FLEXCAN3_B_EN)
 
+/* USB OTG ID Pin： GPIO_AD_B0_01 */
+
+#define GPIO_USBOTG_ID  (GPIO_USB_OTG1_ID_2 | IOMUX_USBOTG_ID_DEFAULT)      /* AD_B0_01 */
 
 /****************************************************************************
  * Public Types
@@ -176,6 +179,18 @@ void imxrt_spidev_initialize(void);
 
 #ifdef CONFIG_IMXRT_LPI2C
 void imxrt_i2c_setup(void);
+#endif
+
+/****************************************************************************
+ * Name: imxrt_usbhost_initialize
+ *
+ * Description:
+ *   Initialize USB host drivers
+ *
+ ****************************************************************************/
+
+#if defined(CONFIG_IMXRT_USBOTG) || defined(CONFIG_USBHOST)
+int imxrt_usbhost_initialize(void);
 #endif
 
 /****************************************************************************

@@ -123,6 +123,15 @@ int imxrt_bringup(void)
   imxrt_i2c_setup();
 #endif
 
+#if defined(CONFIG_IMXRT_USBOTG) || defined(CONFIG_USBHOST)
+  ret = imxrt_usbhost_initialize();
+  if (ret != OK)
+    {
+      syslog(LOG_ERR, "ERROR: Failed to start USB host services: %d\n", ret);
+      return ret;
+    }
+#endif
+
 #if defined(CONFIG_IMXRT_ENET) && defined(CONFIG_NETDEV_LATEINIT)
   ret = imxrt_netinitialize(0);
 #endif
