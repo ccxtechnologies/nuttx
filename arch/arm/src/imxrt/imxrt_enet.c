@@ -1953,7 +1953,7 @@ static int imxrt_writemii(struct imxrt_driver_s *priv, uint8_t phyaddr,
 
   /* Clear the MII interrupt bit */
 
-  putreg32(ENET_INT_MII, IMXRT_ENET_EIR);
+  putreg32(ENET_INT_MII, IMXRT_ENET2_EIR);
 
   /* Initiate the MII Management write */
 
@@ -1963,13 +1963,13 @@ static int imxrt_writemii(struct imxrt_driver_s *priv, uint8_t phyaddr,
            (uint32_t)phyaddr << ENET_MMFR_PA_SHIFT |
            ENET_MMFR_OP_WRMII |
            1 << ENET_MMFR_ST_SHIFT,
-           IMXRT_ENET_MMFR);
+           IMXRT_ENET2_MMFR);
 
   /* Wait for the transfer to complete */
 
   for (timeout = 0; timeout < MII_MAXPOLLS; timeout++)
     {
-      if ((getreg32(IMXRT_ENET_EIR) & ENET_INT_MII) != 0)
+      if ((getreg32(IMXRT_ENET2_EIR) & ENET_INT_MII) != 0)
         {
           break;
         }
@@ -1984,7 +1984,7 @@ static int imxrt_writemii(struct imxrt_driver_s *priv, uint8_t phyaddr,
 
   /* Clear the MII interrupt bit */
 
-  putreg32(ENET_INT_MII, IMXRT_ENET_EIR);
+  putreg32(ENET_INT_MII, IMXRT_ENET2_EIR);
   return OK;
 }
 
@@ -2012,7 +2012,7 @@ static int imxrt_readmii(struct imxrt_driver_s *priv, uint8_t phyaddr,
 
   /* Clear the MII interrupt bit */
 
-  putreg32(ENET_INT_MII, IMXRT_ENET_EIR);
+  putreg32(ENET_INT_MII, IMXRT_ENET2_EIR);
 
   /* Initiate the MII Management read */
 
@@ -2021,13 +2021,13 @@ static int imxrt_readmii(struct imxrt_driver_s *priv, uint8_t phyaddr,
            (uint32_t)phyaddr << ENET_MMFR_PA_SHIFT |
            ENET_MMFR_OP_RDMII |
            1 << ENET_MMFR_ST_SHIFT,
-           IMXRT_ENET_MMFR);
+           IMXRT_ENET2_MMFR);
 
   /* Wait for the transfer to complete */
 
   for (timeout = 0; timeout < MII_MAXPOLLS; timeout++)
     {
-      if ((getreg32(IMXRT_ENET_EIR) & ENET_INT_MII) != 0)
+      if ((getreg32(IMXRT_ENET2_EIR) & ENET_INT_MII) != 0)
         {
           break;
         }
@@ -2043,11 +2043,11 @@ static int imxrt_readmii(struct imxrt_driver_s *priv, uint8_t phyaddr,
 
   /* Clear the MII interrupt bit */
 
-  putreg32(ENET_INT_MII, IMXRT_ENET_EIR);
+  putreg32(ENET_INT_MII, IMXRT_ENET2_EIR);
 
   /* And return the MII data */
 
-  *data = (uint16_t)(getreg32(IMXRT_ENET_MMFR) & ENET_MMFR_DATA_MASK);
+  *data = (uint16_t)(getreg32(IMXRT_ENET2_MMFR) & ENET_MMFR_DATA_MASK);
   return OK;
 }
 
@@ -2340,8 +2340,8 @@ static inline int imxrt_initphy(struct imxrt_driver_s *priv, bool renogphy)
 #endif
   tcr = 0;
 
-  putreg32(rcr, IMXRT_ENET_RCR);
-  putreg32(tcr, IMXRT_ENET_TCR);
+  putreg32(rcr, IMXRT_ENET2_RCR);
+  putreg32(tcr, IMXRT_ENET2_TCR);
 
   /* Enable Discard Of Frames With MAC Layer Errors.
    * Enable Discard Of Frames With Wrong Protocol Checksum.
@@ -2349,7 +2349,7 @@ static inline int imxrt_initphy(struct imxrt_driver_s *priv, bool renogphy)
    */
 
   racc = ENET_RACC_PRODIS | ENET_RACC_LINEDIS | ENET_RACC_IPDIS;
-  putreg32(racc, IMXRT_ENET_RACC);
+  putreg32(racc, IMXRT_ENET2_RACC);
 
   /* Setup half or full duplex */
 
@@ -2390,8 +2390,8 @@ static inline int imxrt_initphy(struct imxrt_driver_s *priv, bool renogphy)
       return -EIO;
     }
 
-  putreg32(rcr, IMXRT_ENET_RCR);
-  putreg32(tcr, IMXRT_ENET_TCR);
+  putreg32(rcr, IMXRT_ENET2_RCR);
+  putreg32(tcr, IMXRT_ENET2_TCR);
   return OK;
 }
 
