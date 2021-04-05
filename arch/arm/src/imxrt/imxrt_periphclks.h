@@ -302,6 +302,7 @@
 #define imxrt_clockall_enc3()             imxrt_periphclk_configure(CCM_CCGR_ENC3, CCM_CG_ALL)
 #define imxrt_clockall_enc4()             imxrt_periphclk_configure(CCM_CCGR_ENC4, CCM_CG_ALL)
 #define imxrt_clockall_enet()             imxrt_periphclk_configure(CCM_CCGR_ENET, CCM_CG_ALL)
+#define imxrt_clockall_enet2()             imxrt_periphclk_configure(CCM_CCGR_ENET2, CCM_CG_ALL)
 #define imxrt_clockall_ewm()              imxrt_periphclk_configure(CCM_CCGR_EWM, CCM_CG_ALL)
 #define imxrt_clockall_flexio1()          imxrt_periphclk_configure(CCM_CCGR_FLEXIO1, CCM_CG_ALL)
 #define imxrt_clockall_flexio2()          imxrt_periphclk_configure(CCM_CCGR_FLEXIO2, CCM_CG_ALL)

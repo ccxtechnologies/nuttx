@@ -227,21 +227,21 @@
 
 /* ETH Disambiguation *******************************************************/
 
-#define GPIO_ENET_TX_DATA00  (GPIO_ENET_TX_DATA00_1| \
-                              IOMUX_ENET_DATA_DEFAULT)                    /* GPIO_B1_07 */
-#define GPIO_ENET_TX_DATA01  (GPIO_ENET_TX_DATA01_1| \
-                              IOMUX_ENET_DATA_DEFAULT)                    /* GPIO_B1_08 */
-#define GPIO_ENET_RX_DATA00  (GPIO_ENET_RX_DATA00_1| \
-                              IOMUX_ENET_DATA_DEFAULT)                    /* GPIO_B1_04 */
-#define GPIO_ENET_RX_DATA01  (GPIO_ENET_RX_DATA01_1| \
-                              IOMUX_ENET_DATA_DEFAULT)                    /* GPIO_B1_05 */
-#define GPIO_ENET_MDIO       (GPIO_ENET_MDIO_2|IOMUX_ENET_MDIO_DEFAULT)   /* GPIO_AD_B1_05 */
-#define GPIO_ENET_MDC        (GPIO_ENET_MDC_2|IOMUX_ENET_MDC_DEFAULT)     /* GPIO_AD_B1_04 */
-#define GPIO_ENET_RX_EN      (GPIO_ENET_RX_EN_1|IOMUX_ENET_EN_DEFAULT)    /* GPIO_B1_06 */
-#define GPIO_ENET_RX_ER      (GPIO_ENET_RX_ER_1|IOMUX_ENET_RXERR_DEFAULT) /* GPIO_B1_11 */
-#define GPIO_ENET_TX_CLK     (GPIO_ENET_REF_CLK_2|\
-                              IOMUX_ENET_TX_CLK_DEFAULT)                  /* GPIO_B1_10 */
-#define GPIO_ENET_TX_EN      (GPIO_ENET_TX_EN_1|IOMUX_ENET_EN_DEFAULT)    /* GPIO_B1_09 */
+#define GPIO_ENET_TX_DATA00  (GPIO_ENET2_TX_DATA00_1| \
+                              IOMUX_ENET_DATA_DEFAULT)                    /* GPIO_B1_14 */
+#define GPIO_ENET_TX_DATA01  (GPIO_ENET2_TX_DATA01_1| \
+                              IOMUX_ENET_DATA_DEFAULT)                    /* GPIO_B1_15 */
+#define GPIO_ENET_RX_DATA00  (GPIO_ENET2_RX_DATA00_1| \
+                              IOMUX_ENET_DATA_DEFAULT)                    /* GPIO_EMC_35 */
+#define GPIO_ENET_RX_DATA01  (GPIO_ENET2_RX_DATA01_1| \
+                              IOMUX_ENET_DATA_DEFAULT)                    /* GPIO_EMC_36 */
+#define GPIO_ENET_MDIO       (GPIO_ENET2_MDIO_1|IOMUX_ENET_MDIO_DEFAULT)   /* GPIO_EMC_39 */
+#define GPIO_ENET_MDC        (GPIO_ENET2_MDC_1|IOMUX_ENET_MDC_DEFAULT)     /* GPIO_EMC_38 */
+#define GPIO_ENET_RX_EN      (GPIO_ENET2_RX_EN_1|IOMUX_ENET_EN_DEFAULT)    /* GPIO_EMC_37 */
+#define GPIO_ENET_RX_ER      (GPIO_ENET2_RX_ER_1|IOMUX_ENET_RXERR_DEFAULT) /* GPIO_EMC_34 */
+#define GPIO_ENET_TX_CLK     (GPIO_ENET2_REF_CLK_1|\
+                              IOMUX_ENET_TX_CLK_DEFAULT)                  /* GPIO_EMC_33 */
+#define GPIO_ENET_TX_EN      (GPIO_ENET2_TX_EN_1|IOMUX_ENET_EN_DEFAULT)    /* GPIO_EMC_32 */
 #undef CONFIG_ARCH_PHY_INTERRUPT
 
 /* PIO Disambiguation *******************************************************/
