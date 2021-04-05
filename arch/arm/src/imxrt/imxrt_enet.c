@@ -1335,8 +1335,8 @@ static int imxrt_ifup_action(struct net_driver_s *dev, bool resetphy)
   /* Set the MAC address */
 
   putreg32((mac[0] << 24) | (mac[1] << 16) | (mac[2] << 8) | mac[3],
-           IMXRT_ENET_PALR);
-  putreg32((mac[4] << 24) | (mac[5] << 16), IMXRT_ENET_PAUR);
+           IMXRT_ENET2_PALR);
+  putreg32((mac[4] << 24) | (mac[5] << 16), IMXRT_ENET2_PAUR);
 
   /* Configure the PHY */
 
@@ -1350,44 +1350,44 @@ static int imxrt_ifup_action(struct net_driver_s *dev, bool resetphy)
   /* Handle promiscuous mode */
 
 #ifdef CONFIG_NET_PROMISCUOUS
-  regval = getreg32(IMXRT_ENET_RCR);
+  regval = getreg32(IMXRT_ENET2_RCR);
   regval |= ENET_RCR_PROM;
-  putreg32(regval, IMXRT_ENET_RCR);
+  putreg32(regval, IMXRT_ENET2_RCR);
 #endif
 
   /* Select legacy of enhanced buffer descriptor format */
 
 #ifdef CONFIG_IMXRT_ENETENHANCEDBD
-  putreg32(ENET_ECR_EN1588, IMXRT_ENET_ECR);
+  putreg32(ENET_ECR_EN1588, IMXRT_ENET2_ECR);
 #else
-  putreg32(0, IMXRT_ENET_ECR);
+  putreg32(0, IMXRT_ENET2_ECR);
 #endif
 
   /* Set the RX buffer size */
 
-  putreg32(IMXRT_BUF_SIZE, IMXRT_ENET_MRBR);
+  putreg32(IMXRT_BUF_SIZE, IMXRT_ENET2_MRBR);
 
   /* Point to the start of the circular RX buffer descriptor queue */
 
-  putreg32((uint32_t)priv->rxdesc, IMXRT_ENET_RDSR);
+  putreg32((uint32_t)priv->rxdesc, IMXRT_ENET2_RDSR);
 
   /* Point to the start of the circular TX buffer descriptor queue */
 
-  putreg32((uint32_t)priv->txdesc, IMXRT_ENET_TDSR);
+  putreg32((uint32_t)priv->txdesc, IMXRT_ENET2_TDSR);
 
   /* And enable the MAC itself */
 
-  regval  = getreg32(IMXRT_ENET_ECR);
+  regval  = getreg32(IMXRT_ENET2_ECR);
   regval |= ENET_ECR_ETHEREN
 #ifdef IMXRT_USE_DBSWAP
          | ENET_ECR_DBSWP
 #endif
         ;
-  putreg32(regval, IMXRT_ENET_ECR);
+  putreg32(regval, IMXRT_ENET2_ECR);
 
   /* Indicate that there have been empty receive buffers produced */
 
-  putreg32(ENET_RDAR, IMXRT_ENET_RDAR);
+  putreg32(ENET_RDAR, IMXRT_ENET2_RDAR);
 
   /* Set and activate a timer process */
 
@@ -1396,14 +1396,14 @@ static int imxrt_ifup_action(struct net_driver_s *dev, bool resetphy)
 
   /* Clear all pending ENET interrupt */
 
-  putreg32(RX_INTERRUPTS | ERROR_INTERRUPTS | TX_INTERRUPTS, IMXRT_ENET_EIR);
+  putreg32(RX_INTERRUPTS | ERROR_INTERRUPTS | TX_INTERRUPTS, IMXRT_ENET2_EIR);
 
   /* Enable RX and error interrupts at the controller (TX interrupts are
    * still disabled).
    */
 
   putreg32(RX_INTERRUPTS | ERROR_INTERRUPTS,
-           IMXRT_ENET_EIMR);
+           IMXRT_ENET2_EIMR);
 
   /* Mark the interrupt "up" and enable interrupts at the NVIC */
 
@@ -1412,7 +1412,7 @@ static int imxrt_ifup_action(struct net_driver_s *dev, bool resetphy)
 #if 0
   up_enable_irq(IMXRT_IRQ_EMACTMR);
 #endif
-  up_enable_irq(IMXRT_IRQ_ENET);
+  up_enable_irq(IMXRT_IRQ_ENET2);
 
   return OK;
 }
@@ -1926,7 +1926,7 @@ static void imxrt_initmii(struct imxrt_driver_s *priv)
 
   putreg32(ENET_MSCR_HOLDTIME_2CYCLES |
            IMXRT_MII_SPEED << ENET_MSCR_MII_SPEED_SHIFT,
-           IMXRT_ENET_MSCR);
+           IMXRT_ENET2_MSCR);
 }
 
 /****************************************************************************
