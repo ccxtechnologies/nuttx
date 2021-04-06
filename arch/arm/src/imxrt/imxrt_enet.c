@@ -2553,7 +2553,7 @@ int imxrt_netinitialize(int intf)
    * except STOP mode.
    */
 
-  imxrt_clockall_enet();
+  imxrt_clockall_enet2();
 
   /* Configure all ENET/MII pins */
 
