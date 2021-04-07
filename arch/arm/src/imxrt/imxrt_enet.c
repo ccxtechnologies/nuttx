@@ -104,7 +104,7 @@
  * that will be supported.
  */
 
-#if CONFIG_IMXRT_ENET_NETHIFS != 1
+#if CONFIG_IMXRT_ENET_NETHIFS > 2
 #  error "CONFIG_IMXRT_ENET_NETHIFS must be one for now"
 #endif
 
@@ -203,6 +203,7 @@
 #  define BOARD_PHY_ISDUPLEX(s) (((s) & MII_PHYCTRL1_MODE_DUPLEX) != 0)
 #elif defined(CONFIG_ETH0_PHY_HI5200)
 #  define BOARD_PHY_NAME        "HI5200"
+#  define BOARD_PHY0_INDEX       (0)
 #  define BOARD_PHYID1          MII_PHYID1_HI5200
 #  define BOARD_PHYID2          MII_PHYID2_HI5200
 #  define BOARD_PHY_STATUS      MII_HI5200_PHYCTRL2
@@ -229,7 +230,21 @@
 #  define BOARD_PHY_100BASET(s) (((s) & MII_DP83825I_PHYSTS_SPEED) == 0)
 #  define BOARD_PHY_ISDUPLEX(s) (((s) & MII_DP83825I_PHYSTS_DUPLEX) != 0)
 #else
-#  error "Unrecognized or missing PHY selection"
+#  error "Unrecognized or missing PHY0 selection"
+#endif
+
+#if defined(CONFIG_ETH1_PHY_HI5200)
+#  define BOARD_PHY_NAME        "HI5200"
+#  define BOARD_PHY1_INDEX       (1)
+#  define BOARD_PHYID1          MII_PHYID1_HI5200
+#  define BOARD_PHYID2          MII_PHYID2_HI5200
+#  define BOARD_PHY_STATUS      MII_HI5200_PHYCTRL2
+#  define BOARD_PHY_ADDR        (1)
+#  define BOARD_PHY_10BASET(s)  (((s) & MII_HI5200_PHYCTRL2_MODE_10HDX) != 0)
+#  define BOARD_PHY_100BASET(s) (((s) & MII_HI5200_PHYCTRL2_MODE_100HDX) != 0)
+#  define BOARD_PHY_ISDUPLEX(s) (((s) & MII_HI5200_PHYCTRL2_MODE_DUPLEX) != 0)
+#else
+#  error "Unrecognized or missing PHY1 selection"
 #endif
 
 /* Estimate the MII_SPEED in order to get an MDC close to 2.5MHz,
