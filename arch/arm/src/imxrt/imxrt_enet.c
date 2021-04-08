@@ -1148,7 +1148,7 @@ static void imxrt_enet_interrupt_work(FAR void *arg)
 static int imxrt_enet_interrupt(int irq, FAR void *context, FAR void *arg)
 {
   register FAR struct imxrt_driver_s *priv = &g_enet[0];
-  ninfo("imxrt_enet_interrupt: setting register to phyindex = %d\n", priv->phyindex);
+  ninfo("setting register to phyindex = %d\n", priv->phyindex);
 
   /* Disable further Ethernet interrupts.  Because Ethernet interrupts are
    * also disabled if the TX timeout event occurs, there can be no race
