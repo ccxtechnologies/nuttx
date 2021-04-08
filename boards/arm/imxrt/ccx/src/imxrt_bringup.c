@@ -133,7 +133,22 @@ int imxrt_bringup(void)
 #endif
 
 #if defined(CONFIG_IMXRT_ENET) && defined(CONFIG_NETDEV_LATEINIT)
+#ifdef CONFIG_ETH0_PHY_HI5200
   ret = imxrt_netinitialize(0);
+  if (ret < 0)
+  {
+    syslog(LOG_ERR, "ERROR: imxrt_netinitialize(0) failed: %d\n", ret);
+    return ret;
+  }
+#endif
+#ifdef CONFIG_ETH1_PHY_HI5200
+  ret = imxrt_netinitialize(1);
+  if (ret < 0)
+  {
+    syslog(LOG_ERR, "ERROR: imxrt_netinitialize(1) failed: %d\n", ret);
+    return ret;
+  }
+#endif
 #endif
 
 #if defined(CONFIG_IMXRT_FLEXCAN) && defined(CONFIG_NETDEV_LATEINIT)

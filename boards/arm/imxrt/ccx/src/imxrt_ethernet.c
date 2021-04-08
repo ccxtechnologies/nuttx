@@ -68,7 +68,8 @@
  * Pre-processor Definitions
  ****************************************************************************/
 
-#define IMXRT_ENET_DEVNAME "eth0"
+#define IMXRT_ENET1_DEVNAME "eth0"
+#define IMXRT_ENET2_DEVNAME "eth1"
 
 /* Debug ********************************************************************/
 
@@ -134,7 +135,7 @@ int arch_phy_irq(FAR const char *intf, xcpt_t handler, void *arg,
   DEBUGASSERT(intf);
 
   ninfo("%s: handler=%p\n", intf, handler);
-  phyinfo("EMAC: devname=%s\n", IMXRT_ENET_DEVNAME);
+  phyinfo("EMAC: devname=%s\n", intf == 1 ? IMXRT_ENET1_DEVNAME : IMXRT_ENET2_DEVNAME);
 
   if (handler == NULL)
     {
