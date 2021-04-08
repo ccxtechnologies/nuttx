@@ -2550,13 +2550,13 @@ static void imxrt_enet_clk_init(struct imxrt_driver_s *priv)
   {
     case BOARD_PHY0_INDEX:
 
-      /* Enable ENET2_TX_CLK_DIR (Provides 50MHz clk OUT to PHY) */
+      /* Enable ENET1_TX_CLK_DIR (Provides 50MHz clk OUT to PHY) */
 
       regval = getreg32(IMXRT_IOMUXC_GPR_GPR1);
       regval |= GPR_GPR1_ENET1_TX_CLK_OUT_EN;
       putreg32(regval, IMXRT_IOMUXC_GPR_GPR1);
 
-      /* Enable the ENET clock.  Clock is on during all modes,
+      /* Enable the ENET1 clock.  Clock is on during all modes,
       * except STOP mode.
       */
       imxrt_clockall_enet();
@@ -2570,7 +2570,7 @@ static void imxrt_enet_clk_init(struct imxrt_driver_s *priv)
       regval |= GPR_GPR1_ENET2_TX_CLK_OUT_EN;
       putreg32(regval, IMXRT_IOMUXC_GPR_GPR1);
 
-      /* Enable the ENET clock.  Clock is on during all modes,
+      /* Enable the ENET2 clock.  Clock is on during all modes,
       * except STOP mode.
       */
       imxrt_clockall_enet2();
@@ -2623,7 +2623,7 @@ static void imxrt_enet_gpio_init(struct imxrt_driver_s *priv)
 
     case BOARD_PHY1_INDEX:
 
-      /* Configure all ENET/MII pins */
+      /* Configure all ENET2/MII pins */
       imxrt_config_gpio(GPIO_ENET2_MDIO);
       imxrt_config_gpio(GPIO_ENET2_MDC);
       imxrt_config_gpio(GPIO_ENET2_RX_EN);
