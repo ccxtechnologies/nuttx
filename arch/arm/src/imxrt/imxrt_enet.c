@@ -2744,16 +2744,6 @@ int imxrt_netinitialize(int intf)
       return ret;
     }
 
-  /* Attach the Ethernet interrupt handler */
-
-  if (irq_attach(IMXRT_IRQ_ENET2, imxrt_enet_interrupt, NULL))
-    {
-      /* We could not attach the ISR to the interrupt */
-
-      nerr("ERROR: Failed to attach EMACTX IRQ\n");
-      return -EAGAIN;
-    }
-
   priv->dev.d_ifup    = imxrt_ifup;     /* I/F up (new IP address) callback */
   priv->dev.d_ifdown  = imxrt_ifdown;   /* I/F down callback */
   priv->dev.d_txavail = imxrt_txavail;  /* New TX data callback */
