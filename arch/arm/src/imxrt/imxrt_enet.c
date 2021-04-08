@@ -229,11 +229,7 @@
 #  define BOARD_PHY_10BASET(s)  (((s) & MII_DP83825I_PHYSTS_SPEED) != 0)
 #  define BOARD_PHY_100BASET(s) (((s) & MII_DP83825I_PHYSTS_SPEED) == 0)
 #  define BOARD_PHY_ISDUPLEX(s) (((s) & MII_DP83825I_PHYSTS_DUPLEX) != 0)
-#else
-#  error "Unrecognized or missing PHY0 selection"
-#endif
-
-#if defined(CONFIG_ETH1_PHY_HI5200)
+#elif defined(CONFIG_ETH1_PHY_HI5200)
 #  define BOARD_PHY_NAME        "HI5200"
 #  define BOARD_PHY1_INDEX       (1)
 #  define BOARD_PHYID1          MII_PHYID1_HI5200
@@ -244,7 +240,7 @@
 #  define BOARD_PHY_100BASET(s) (((s) & MII_HI5200_PHYCTRL2_MODE_100HDX) != 0)
 #  define BOARD_PHY_ISDUPLEX(s) (((s) & MII_HI5200_PHYCTRL2_MODE_DUPLEX) != 0)
 #else
-#  error "Unrecognized or missing PHY1 selection"
+#  error "Unrecognized or missing PHY selection"
 #endif
 
 /* Estimate the MII_SPEED in order to get an MDC close to 2.5MHz,
@@ -2550,6 +2546,7 @@ static void imxrt_enet_clk_init(struct imxrt_driver_s *priv)
 
   switch (phyindex)
   {
+#ifdef BOARD_PHY0_INDEX
     case BOARD_PHY0_INDEX:
 
       /* Enable ENET1_TX_CLK_DIR (Provides 50MHz clk OUT to PHY) */
@@ -2563,7 +2560,9 @@ static void imxrt_enet_clk_init(struct imxrt_driver_s *priv)
       */
       imxrt_clockall_enet();
       break;
+#endif
 
+#ifdef BOARD_PHY1_INDEX
     case BOARD_PHY1_INDEX:
 
       /* Enable ENET2_TX_CLK_DIR (Provides 50MHz clk OUT to PHY) */
@@ -2577,8 +2576,10 @@ static void imxrt_enet_clk_init(struct imxrt_driver_s *priv)
       */
       imxrt_clockall_enet2();
       break;
+#endif
 
     default:
+
       nerr("Incorrect ETH interface specified\n");
   }
 }
@@ -2606,6 +2607,7 @@ static void imxrt_enet_gpio_init(struct imxrt_driver_s *priv)
 
   switch (phyindex)
   {
+#ifdef BOARD_PHY0_INDEX
     case BOARD_PHY0_INDEX:
 
       /* Configure all ENET/MII pins */
@@ -2622,7 +2624,9 @@ static void imxrt_enet_gpio_init(struct imxrt_driver_s *priv)
       imxrt_config_gpio(GPIO_ENET1_RX_ER);
 #endif
       break;
+#endif
 
+#ifdef BOARD_PHY1_INDEX
     case BOARD_PHY1_INDEX:
 
       /* Configure all ENET2/MII pins */
@@ -2639,8 +2643,10 @@ static void imxrt_enet_gpio_init(struct imxrt_driver_s *priv)
       imxrt_config_gpio(GPIO_ENET2_RX_ER);
 #endif
       break;
+#endif
 
     default:
+
       nerr("Incorrect ETH interface specified\n");
   }
 }
@@ -2651,37 +2657,39 @@ static int imxrt_enet_irq_attach(struct imxrt_driver_s *priv)
   ninfo("Attaching interrupt handler for ETH%d\n", phyindex);
   switch (phyindex)
     {
+#ifdef BOARD_PHY0_INDEX
       case BOARD_PHY0_INDEX:
 
         if (irq_attach(IMXRT_IRQ_ENET, imxrt_enet_interrupt, NULL))
           {
             /* We could not attach the ISR to the interrupt */
 
-            nerr("ERROR: Failed to attach EMAC%dTX IRQ\n", phyindex);
             return -EAGAIN;
           }
         else
           {
             return OK;
           }
+#endif
 
+#ifdef BOARD_PHY1_INDEX
       case BOARD_PHY1_INDEX:
 
         if (irq_attach(IMXRT_IRQ_ENET2, imxrt_enet_interrupt, NULL))
           {
             /* We could not attach the ISR to the interrupt */
 
-            nerr("ERROR: Failed to attach EMAC%dTX IRQ\n", phyindex);
             return -EAGAIN;
           }
         else
           {
             return OK;
           }
+#endif
 
       default:
-        nerr("ERROR: Failed to attach EMACTX IRQ to I/F ETH%d -> \
-              unsupported\n", phyindex);
+
+        /* Something is wrong with PHY index */
         return -ENODEV;
     }
 
@@ -2726,14 +2734,20 @@ int imxrt_netinitialize(int intf)
 
   memset(priv, 0, sizeof(struct imxrt_driver_s));
   ninfo("Initializing ETH%d\n", intf);
+
+#ifdef BOARD_PHY0_INDEX
   if (intf == BOARD_PHY0_INDEX)
     {
       priv->phyindex = BOARD_PHY0_INDEX;
     }
-  else if (intf == BOARD_PHY1_INDEX)
+#endif
+
+#ifdef BOARD_PHY1_INDEX
+  if (intf == BOARD_PHY1_INDEX)
     {
       priv->phyindex = BOARD_PHY1_INDEX;
     }
+#endif
 
   imxrt_enet_clk_init(priv);
   imxrt_enet_gpio_init(priv);
@@ -2741,6 +2755,7 @@ int imxrt_netinitialize(int intf)
   ret = imxrt_enet_irq_attach(priv);
   if (ret < 0)
     {
+      nerr("ERROR: Failed to attach EMAC%dTX IRQ\n", priv->phyindex);
       return ret;
     }
 
