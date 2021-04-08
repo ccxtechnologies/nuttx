@@ -136,18 +136,18 @@ int imxrt_bringup(void)
 #ifdef CONFIG_ETH0_PHY_HI5200
   ret = imxrt_netinitialize(0);
   if (ret < 0)
-  {
-    syslog(LOG_ERR, "ERROR: imxrt_netinitialize(0) failed: %d\n", ret);
-    return ret;
-  }
+    {
+      syslog(LOG_ERR, "ERROR: imxrt_netinitialize(0) failed: %d\n", ret);
+      return ret;
+    }
 #endif
 #ifdef CONFIG_ETH1_PHY_HI5200
   ret = imxrt_netinitialize(1);
   if (ret < 0)
-  {
-    syslog(LOG_ERR, "ERROR: imxrt_netinitialize(1) failed: %d\n", ret);
-    return ret;
-  }
+    {
+      syslog(LOG_ERR, "ERROR: imxrt_netinitialize(1) failed: %d\n", ret);
+      return ret;
+    }
 #endif
 #endif
 

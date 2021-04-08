@@ -418,6 +418,7 @@ static void imxrt_initbuffers(struct imxrt_driver_s *priv);
 static void imxrt_reset(struct imxrt_driver_s *priv);
 static void imxrt_enet_clk_init(struct imxrt_driver_s *priv);
 static void imxrt_enet_gpio_init(struct imxrt_driver_s *priv);
+static int imxrt_enet_irq_attach(struct imxrt_driver_s *priv);
 
 /****************************************************************************
  * Private Functions
@@ -1147,6 +1148,7 @@ static void imxrt_enet_interrupt_work(FAR void *arg)
 static int imxrt_enet_interrupt(int irq, FAR void *context, FAR void *arg)
 {
   register FAR struct imxrt_driver_s *priv = &g_enet[0];
+  ninfo("imxrt_enet_interrupt: setting register to phyindex = %d\n", priv->phyindex);
 
   /* Disable further Ethernet interrupts.  Because Ethernet interrupts are
    * also disabled if the TX timeout event occurs, there can be no race
@@ -2643,6 +2645,47 @@ static void imxrt_enet_gpio_init(struct imxrt_driver_s *priv)
   }
 }
 
+static int imxrt_enet_irq_attach(struct imxrt_driver_s *priv)
+{
+  uint8_t phyindex = priv->phyindex;
+  ninfo("Attaching interrupt handler for ETH%d\n", phyindex);
+  switch (phyindex)
+    {
+      case BOARD_PHY0_INDEX:
+
+        if (irq_attach(IMXRT_IRQ_ENET, imxrt_enet_interrupt, NULL))
+          {
+            /* We could not attach the ISR to the interrupt */
+
+            nerr("ERROR: Failed to attach EMAC%dTX IRQ\n", phyindex);
+            return -EAGAIN;
+          }
+        else
+          {
+            return OK;
+          }
+
+      case BOARD_PHY1_INDEX:
+
+        if (irq_attach(IMXRT_IRQ_ENET2, imxrt_enet_interrupt, NULL))
+          {
+            /* We could not attach the ISR to the interrupt */
+
+            nerr("ERROR: Failed to attach EMAC%dTX IRQ\n", phyindex);
+            return -EAGAIN;
+          }
+        else
+          {
+            return OK;
+          }
+
+      default:
+        nerr("ERROR: Failed to attach EMACTX IRQ to I/F ETH%d -> \
+              unsupported\n", phyindex);
+        return -ENODEV;
+    }
+
+}
 /****************************************************************************
  * Public Functions
  ****************************************************************************/
@@ -2684,16 +2727,22 @@ int imxrt_netinitialize(int intf)
   memset(priv, 0, sizeof(struct imxrt_driver_s));
   ninfo("Initializing ETH%d\n", intf);
   if (intf == BOARD_PHY0_INDEX)
-  {
-    priv->phyindex = BOARD_PHY0_INDEX;
-  }
+    {
+      priv->phyindex = BOARD_PHY0_INDEX;
+    }
   else if (intf == BOARD_PHY1_INDEX)
-  {
-    priv->phyindex = BOARD_PHY1_INDEX;
-  }
+    {
+      priv->phyindex = BOARD_PHY1_INDEX;
+    }
 
   imxrt_enet_clk_init(priv);
   imxrt_enet_gpio_init(priv);
+
+  ret = imxrt_enet_irq_attach(priv);
+  if (ret < 0)
+    {
+      return ret;
+    }
 
   /* Attach the Ethernet interrupt handler */
 
