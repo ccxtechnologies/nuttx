@@ -313,7 +313,9 @@ struct imxrt_driver_s
  * Private Data
  ****************************************************************************/
 
-static struct imxrt_driver_s g_enet[CONFIG_IMXRT_ENET_NETHIFS];
+#warning @TODO Bring it back later
+// static struct imxrt_driver_s g_enet[CONFIG_IMXRT_ENET_NETHIFS];
+static struct imxrt_driver_s g_enet[2];
 
 /* The DMA descriptors.  A unaligned uint8_t is used to allocate the
  * memory; 16 is added to assure that we can meet the descriptor alignment
@@ -1143,7 +1145,8 @@ static void imxrt_enet_interrupt_work(FAR void *arg)
 
 static int imxrt_enet_interrupt(int irq, FAR void *context, FAR void *arg)
 {
-  register FAR struct imxrt_driver_s *priv = &g_enet[0];
+#warning @TODO <<<<----------------------- FIX THIS ASAP!!!!!!!!!!!
+  register FAR struct imxrt_driver_s *priv = &g_enet[1];
   ninfo("setting register to phyindex = %d\n", priv->phyindex);
 
   /* Disable further Ethernet interrupts.  Because Ethernet interrupts are
@@ -2769,7 +2772,7 @@ int imxrt_netinitialize(int intf)
 #ifdef CONFIG_NETDEV_IOCTL
   priv->dev.d_ioctl   = imxrt_ioctl;    /* Support PHY ioctl() calls */
 #endif
-  priv->dev.d_private = g_enet;         /* Used to recover private state from dev */
+  priv->dev.d_private = &g_enet[intf];         /* Used to recover private state from dev */
 
 #ifdef CONFIG_NET_ETHERNET
   /* Determine a semi-unique MAC address from MCU UID
