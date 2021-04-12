@@ -1120,21 +1120,41 @@ static void imxrt_enet_interrupt_work(FAR void *arg)
 
 static int imxrt_enet_interrupt(int irq, FAR void *context, FAR void *arg)
 {
-#warning @TODO <<<<----------------------- FIX THIS ASAP!!!!!!!!!!!
-  register FAR struct imxrt_driver_s *priv = &g_enet[1];
-  ninfo("setting register to phyindex = %d\n", priv->phyindex);
+  if (irq == IMXRT_IRQ_ENET)
+    {
+      register FAR struct imxrt_driver_s *priv = &g_enet[0];
+      ninfo("setting register to phyindex = %d\n", priv->phyindex);
 
-  /* Disable further Ethernet interrupts.  Because Ethernet interrupts are
-   * also disabled if the TX timeout event occurs, there can be no race
-   * condition here.
-   */
+      /* Disable further Ethernet interrupts.  Because Ethernet interrupts are
+      * also disabled if the TX timeout event occurs, there can be no race
+      * condition here.
+      */
+      up_disable_irq(IMXRT_IRQ_ENET);
 
-  up_disable_irq(IMXRT_IRQ_ENET2);
+      /* Schedule to perform the interrupt processing on the worker thread. */
+      // work_queue(ETHWORK, &priv->irqwork, imxrt_enet_interrupt_work, priv, 0);
+      return OK;
+    }
+  else if (irq == IMXRT_IRQ_ENET2)
+    {
+      register FAR struct imxrt_driver_s *priv = &g_enet[1];
+      ninfo("setting register to phyindex = %d\n", priv->phyindex);
 
-  /* Schedule to perform the interrupt processing on the worker thread. */
+      /* Disable further Ethernet interrupts.  Because Ethernet interrupts are
+      * also disabled if the TX timeout event occurs, there can be no race
+      * condition here.
+      */
+      up_disable_irq(IMXRT_IRQ_ENET2);
 
-  work_queue(ETHWORK, &priv->irqwork, imxrt_enet_interrupt_work, priv, 0);
-  return OK;
+      /* Schedule to perform the interrupt processing on the worker thread. */
+      // work_queue(ETHWORK, &priv->irqwork, imxrt_enet_interrupt_work, priv, 0);
+      return OK;
+    }
+  else
+    {
+
+      return ERROR;
+    }
 }
 
 /****************************************************************************
