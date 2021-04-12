@@ -191,18 +191,9 @@
  *
  * ...and further PHY descriptions here.
  */
-
-#if defined(CONFIG_ETH0_PHY_KSZ8081)
-#  define BOARD_PHY_NAME        "KSZ8081"
-#  define BOARD_PHYID1          MII_PHYID1_KSZ8081
-#  define BOARD_PHYID2          MII_PHYID2_KSZ8081
-#  define BOARD_PHY_STATUS      MII_KSZ8081_PHYCTRL1
-#  define BOARD_PHY_ADDR        (0)
-#  define BOARD_PHY_10BASET(s)  (((s) & MII_PHYCTRL1_MODE_10HDX) != 0)
-#  define BOARD_PHY_100BASET(s) (((s) & MII_PHYCTRL1_MODE_100HDX) != 0)
-#  define BOARD_PHY_ISDUPLEX(s) (((s) & MII_PHYCTRL1_MODE_DUPLEX) != 0)
-#elif defined(CONFIG_ETH0_PHY_HI5200)
-#  define BOARD_PHY_NAME        "HI5200"
+#if defined(CONFIG_ETH0_PHY_HI5200) || defined(CONFIG_ETH1_PHY_HI5200)
+#if defined(CONFIG_ETH0_PHY_HI5200)
+#  define BOARD_PHY_NAME        "HI5200-0"
 #  define BOARD_PHY0_INDEX       (0)
 #  define BOARD_PHYID1          MII_PHYID1_HI5200
 #  define BOARD_PHYID2          MII_PHYID2_HI5200
@@ -211,26 +202,9 @@
 #  define BOARD_PHY_10BASET(s)  (((s) & MII_HI5200_PHYCTRL2_MODE_10HDX) != 0)
 #  define BOARD_PHY_100BASET(s) (((s) & MII_HI5200_PHYCTRL2_MODE_100HDX) != 0)
 #  define BOARD_PHY_ISDUPLEX(s) (((s) & MII_HI5200_PHYCTRL2_MODE_DUPLEX) != 0)
-#elif defined(CONFIG_ETH0_PHY_LAN8720)
-#  define BOARD_PHY_NAME        "LAN8720"
-#  define BOARD_PHYID1          MII_PHYID1_LAN8720
-#  define BOARD_PHYID2          MII_PHYID2_LAN8720
-#  define BOARD_PHY_STATUS      MII_LAN8720_SCSR
-#  define BOARD_PHY_ADDR        (1)
-#  define BOARD_PHY_10BASET(s)  (((s)&MII_LAN8720_SPSCR_10MBPS) != 0)
-#  define BOARD_PHY_100BASET(s) (((s)&MII_LAN8720_SPSCR_100MBPS) != 0)
-#  define BOARD_PHY_ISDUPLEX(s) (((s)&MII_LAN8720_SPSCR_DUPLEX) != 0)
-#elif defined(CONFIG_ETH0_PHY_DP83825I)
-#  define BOARD_PHY_NAME        "DP83825I"
-#  define BOARD_PHYID1          MII_PHYID1_DP83825I
-#  define BOARD_PHYID2          MII_PHYID2_DP83825I
-#  define BOARD_PHY_STATUS      MII_DP83825I_PHYSTS
-#  define BOARD_PHY_ADDR        (0)
-#  define BOARD_PHY_10BASET(s)  (((s) & MII_DP83825I_PHYSTS_SPEED) != 0)
-#  define BOARD_PHY_100BASET(s) (((s) & MII_DP83825I_PHYSTS_SPEED) == 0)
-#  define BOARD_PHY_ISDUPLEX(s) (((s) & MII_DP83825I_PHYSTS_DUPLEX) != 0)
-#elif defined(CONFIG_ETH1_PHY_HI5200)
-#  define BOARD_PHY_NAME        "HI5200"
+#endif
+#if defined(CONFIG_ETH1_PHY_HI5200)
+#  define BOARD_PHY_NAME        "HI5200-1"
 #  define BOARD_PHY1_INDEX       (1)
 #  define BOARD_PHYID1          MII_PHYID1_HI5200
 #  define BOARD_PHYID2          MII_PHYID2_HI5200
@@ -239,8 +213,9 @@
 #  define BOARD_PHY_10BASET(s)  (((s) & MII_HI5200_PHYCTRL2_MODE_10HDX) != 0)
 #  define BOARD_PHY_100BASET(s) (((s) & MII_HI5200_PHYCTRL2_MODE_100HDX) != 0)
 #  define BOARD_PHY_ISDUPLEX(s) (((s) & MII_HI5200_PHYCTRL2_MODE_DUPLEX) != 0)
+#endif
 #else
-#  error "Unrecognized or missing PHY selection"
+#  error "No (or improper) PHY has been selected"
 #endif
 
 /* Estimate the MII_SPEED in order to get an MDC close to 2.5MHz,
@@ -2727,6 +2702,11 @@ int imxrt_netinitialize(int intf)
   uint8_t *mac;
 #endif
   int ret;
+
+#ifdef BOARD_PHY0_INDEX
+  ninfo("BOARD_PHY0_INDEX is defined\n");
+#endif
+
 #ifdef BOARD_PHY1_INDEX
   ninfo("BOARD_PHY1_INDEX is defined\n");
 #endif
