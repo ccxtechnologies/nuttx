@@ -2727,6 +2727,9 @@ int imxrt_netinitialize(int intf)
   uint8_t *mac;
 #endif
   int ret;
+#ifdef BOARD_PHY1_INDEX
+  ninfo("BOARD_PHY1_INDEX is defined\n");
+#endif
 
   /* Get the interface structure associated with this interface number. */
 
@@ -2737,10 +2740,12 @@ int imxrt_netinitialize(int intf)
 
   memset(priv, 0, sizeof(struct imxrt_driver_s));
   ninfo("Initializing ETH%d\n", intf);
+  ninfo("priv addr = %p\n", (void *) priv);
 
 #ifdef BOARD_PHY0_INDEX
   if (intf == BOARD_PHY0_INDEX)
     {
+      ninfo("Setting phyindex to %d\n", BOARD_PHY0_INDEX);
       priv->phyindex = BOARD_PHY0_INDEX;
     }
 #endif
@@ -2748,9 +2753,11 @@ int imxrt_netinitialize(int intf)
 #ifdef BOARD_PHY1_INDEX
   if (intf == BOARD_PHY1_INDEX)
     {
+      ninfo("Setting phyindex to %d\n", BOARD_PHY1_INDEX);
       priv->phyindex = BOARD_PHY1_INDEX;
     }
 #endif
+  ninfo("priv->phyindex = %d\n", priv->phyindex);
 
   imxrt_enet_clk_init(priv);
   imxrt_enet_gpio_init(priv);
