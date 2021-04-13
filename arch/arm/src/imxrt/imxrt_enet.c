@@ -567,9 +567,9 @@ static int imxrt_transmit(FAR struct imxrt_driver_s *priv)
 
   /* Enable TX interrupts */
 
-  regval  = getreg32(IMXRT_ENET2_EIMR);
+  regval  = getreg32(priv->conf.eimr);
   regval |= TX_INTERRUPTS;
-  putreg32(regval, IMXRT_ENET2_EIMR);
+  putreg32(regval, priv->conf.eimr);
 
   /* Setup the TX timeout watchdog (perhaps restarting the timer) */
 
@@ -578,7 +578,7 @@ static int imxrt_transmit(FAR struct imxrt_driver_s *priv)
 
   /* Start the TX transfer (if it was not already waiting for buffers) */
 
-  putreg32(ENET_TDAR, IMXRT_ENET2_TDAR);
+  putreg32(ENET_TDAR, priv->conf.tdar);
 
   spin_unlock_irqrestore(flags);
   return OK;
@@ -887,7 +887,7 @@ static void imxrt_receive(FAR struct imxrt_driver_s *priv)
 
           /* Indicate that there have been empty receive buffers produced */
 
-          putreg32(ENET_RDAR, IMXRT_ENET2_RDAR);
+          putreg32(ENET_RDAR, priv->conf.rdar);
         }
     }
   while (received);
@@ -965,9 +965,9 @@ static void imxrt_txdone(FAR struct imxrt_driver_s *priv)
 
       wd_cancel(&priv->txtimeout);
 
-      regval  = getreg32(IMXRT_ENET2_EIMR);
+      regval  = getreg32(priv->conf.eimr);
       regval &= ~TX_INTERRUPTS;
-      putreg32(regval, IMXRT_ENET2_EIMR);
+      putreg32(regval, priv->conf.eimr);
     }
 
   /* There should be space for a new TX in any event.  Poll the network for
@@ -1009,11 +1009,11 @@ static void imxrt_enet_interrupt_work(FAR void *arg)
 
   /* Get the set of unmasked, pending interrupt. */
 
-  pending = getreg32(IMXRT_ENET2_EIR) & getreg32(IMXRT_ENET2_EIMR);
+  pending = getreg32(priv->conf.eir) & getreg32(priv->conf.eimr);
 
   /* Clear the pending interrupts */
 
-  putreg32(pending, IMXRT_ENET2_EIR);
+  putreg32(pending, priv->conf.eir);
 
   /* Check for errors */
 
@@ -1040,8 +1040,8 @@ static void imxrt_enet_interrupt_work(FAR void *arg)
        * multicast hash table.
        */
 
-      gaurstore = getreg32(IMXRT_ENET2_GAUR);
-      galrstore = getreg32(IMXRT_ENET2_GALR);
+      gaurstore = getreg32(priv->conf.gaur);
+      galrstore = getreg32(priv->conf.galr);
 #endif
 
       imxrt_ifdown(&priv->dev);
@@ -1050,8 +1050,8 @@ static void imxrt_enet_interrupt_work(FAR void *arg)
 #ifdef CONFIG_NET_MCASTGROUP
       /* Now write the multicast table back */
 
-      putreg32(gaurstore, IMXRT_ENET2_GAUR);
-      putreg32(galrstore, IMXRT_ENET2_GALR);
+      putreg32(gaurstore, priv->conf.gaur);
+      putreg32(galrstore, priv->conf.galr);
 #endif
 
       /* Then poll the network for new XMIT data */
@@ -1091,7 +1091,7 @@ static void imxrt_enet_interrupt_work(FAR void *arg)
 #if 0
   up_enable_irq(IMXRT_IRQ_EMACTMR);
 #endif
-  up_enable_irq(IMXRT_IRQ_ENET2);
+  up_enable_irq(priv->conf.enet_irq);
 }
 
 /****************************************************************************
@@ -1119,6 +1119,7 @@ static int imxrt_enet_interrupt(int irq, FAR void *context, FAR void *arg)
   register FAR struct imxrt_driver_s *priv;
   size_t num_interfaces = sizeof g_enet / sizeof g_enet[0];
   ninfo("g_enet[] size = %d\n", num_interfaces);
+
   for (int i = 0; i < num_interfaces; i++)
     {
       priv = &g_enet[i];
@@ -1207,7 +1208,7 @@ static void imxrt_txtimeout_expiry(wdparm_t arg)
    * condition with interrupt work that is already queued and in progress.
    */
 
-  up_disable_irq(IMXRT_IRQ_ENET2);
+  up_disable_irq(priv->conf.enet_irq);
 
   /* Schedule to perform the TX timeout processing on the worker thread,
    * canceling any pending interrupt work.
@@ -1332,8 +1333,8 @@ static int imxrt_ifup_action(struct net_driver_s *dev, bool resetphy)
   /* Set the MAC address */
 
   putreg32((mac[0] << 24) | (mac[1] << 16) | (mac[2] << 8) | mac[3],
-           IMXRT_ENET2_PALR);
-  putreg32((mac[4] << 24) | (mac[5] << 16), IMXRT_ENET2_PAUR);
+           priv->conf.palr);
+  putreg32((mac[4] << 24) | (mac[5] << 16), priv->conf.paur);
 
   /* Configure the PHY */
 
@@ -1347,44 +1348,44 @@ static int imxrt_ifup_action(struct net_driver_s *dev, bool resetphy)
   /* Handle promiscuous mode */
 
 #ifdef CONFIG_NET_PROMISCUOUS
-  regval = getreg32(IMXRT_ENET2_RCR);
+  regval = getreg32(priv->conf.rcr);
   regval |= ENET_RCR_PROM;
-  putreg32(regval, IMXRT_ENET2_RCR);
+  putreg32(regval, priv->conf.rcr);
 #endif
 
   /* Select legacy of enhanced buffer descriptor format */
 
 #ifdef CONFIG_IMXRT_ENETENHANCEDBD
-  putreg32(ENET_ECR_EN1588, IMXRT_ENET2_ECR);
+  putreg32(ENET_ECR_EN1588, priv->conf.ecr);
 #else
-  putreg32(0, IMXRT_ENET2_ECR);
+  putreg32(0, priv->conf.ecr);
 #endif
 
   /* Set the RX buffer size */
 
-  putreg32(IMXRT_BUF_SIZE, IMXRT_ENET2_MRBR);
+  putreg32(IMXRT_BUF_SIZE, priv->conf.mrbr);
 
   /* Point to the start of the circular RX buffer descriptor queue */
 
-  putreg32((uint32_t)priv->rxdesc, IMXRT_ENET2_RDSR);
+  putreg32((uint32_t)priv->rxdesc, priv->conf.rdsr);
 
   /* Point to the start of the circular TX buffer descriptor queue */
 
-  putreg32((uint32_t)priv->txdesc, IMXRT_ENET2_TDSR);
+  putreg32((uint32_t)priv->txdesc, priv->conf.tdsr);
 
   /* And enable the MAC itself */
 
-  regval  = getreg32(IMXRT_ENET2_ECR);
+  regval  = getreg32(priv->conf.ecr);
   regval |= ENET_ECR_ETHEREN
 #ifdef IMXRT_USE_DBSWAP
          | ENET_ECR_DBSWP
 #endif
         ;
-  putreg32(regval, IMXRT_ENET2_ECR);
+  putreg32(regval, priv->conf.ecr);
 
   /* Indicate that there have been empty receive buffers produced */
 
-  putreg32(ENET_RDAR, IMXRT_ENET2_RDAR);
+  putreg32(ENET_RDAR, priv->conf.rdar);
 
   /* Set and activate a timer process */
 
@@ -1393,14 +1394,14 @@ static int imxrt_ifup_action(struct net_driver_s *dev, bool resetphy)
 
   /* Clear all pending ENET interrupt */
 
-  putreg32(RX_INTERRUPTS | ERROR_INTERRUPTS | TX_INTERRUPTS, IMXRT_ENET2_EIR);
+  putreg32(RX_INTERRUPTS | ERROR_INTERRUPTS | TX_INTERRUPTS, priv->conf.eir);
 
   /* Enable RX and error interrupts at the controller (TX interrupts are
    * still disabled).
    */
 
   putreg32(RX_INTERRUPTS | ERROR_INTERRUPTS,
-           IMXRT_ENET2_EIMR);
+           priv->conf.eimr);
 
   /* Mark the interrupt "up" and enable interrupts at the NVIC */
 
@@ -1409,7 +1410,7 @@ static int imxrt_ifup_action(struct net_driver_s *dev, bool resetphy)
 #if 0
   up_enable_irq(IMXRT_IRQ_EMACTMR);
 #endif
-  up_enable_irq(IMXRT_IRQ_ENET2);
+  up_enable_irq(priv->conf.enet_irq);
 
   return OK;
 }
@@ -1470,8 +1471,8 @@ static int imxrt_ifdown(struct net_driver_s *dev)
 
   flags = enter_critical_section();
 
-  up_disable_irq(IMXRT_IRQ_ENET2);
-  putreg32(0, IMXRT_ENET2_EIMR);
+  up_disable_irq(priv->conf.enet_irq);
+  putreg32(0, priv->conf.eimr);
 
   /* Cancel the TX poll timer and TX timeout timers */
 
@@ -1687,12 +1688,12 @@ static int imxrt_addmac(struct net_driver_s *dev, FAR const uint8_t *mac)
 
   if (hashindex > 31)
     {
-      registeraddress = IMXRT_ENET2_GAUR;
+      registeraddress = priv->conf.gaur;
       hashindex      -= 32;
     }
   else
     {
-      registeraddress = IMXRT_ENET2_GALR;
+      registeraddress = priv->conf.galr;
     }
 
   temp  = getreg32(registeraddress);
@@ -1734,12 +1735,12 @@ static int imxrt_rmmac(struct net_driver_s *dev, FAR const uint8_t *mac)
 
   if (hashindex > 31)
     {
-      registeraddress = IMXRT_ENET2_GAUR;
+      registeraddress = priv->conf.gaur;
       hashindex      -= 32;
     }
   else
     {
-      registeraddress = IMXRT_ENET2_GALR;
+      registeraddress = priv->conf.galr;
     }
 
   temp  = getreg32(registeraddress);
@@ -1923,7 +1924,7 @@ static void imxrt_initmii(struct imxrt_driver_s *priv)
 
   putreg32(ENET_MSCR_HOLDTIME_2CYCLES |
            IMXRT_MII_SPEED << ENET_MSCR_MII_SPEED_SHIFT,
-           IMXRT_ENET2_MSCR);
+           priv->conf.mscr);
 }
 
 /****************************************************************************
@@ -1950,7 +1951,7 @@ static int imxrt_writemii(struct imxrt_driver_s *priv, uint8_t phyaddr,
 
   /* Clear the MII interrupt bit */
 
-  putreg32(ENET_INT_MII, IMXRT_ENET2_EIR);
+  putreg32(ENET_INT_MII, priv->conf.eir);
 
   /* Initiate the MII Management write */
 
@@ -1960,13 +1961,13 @@ static int imxrt_writemii(struct imxrt_driver_s *priv, uint8_t phyaddr,
            (uint32_t)phyaddr << ENET_MMFR_PA_SHIFT |
            ENET_MMFR_OP_WRMII |
            1 << ENET_MMFR_ST_SHIFT,
-           IMXRT_ENET2_MMFR);
+           priv->conf.mmfr);
 
   /* Wait for the transfer to complete */
 
   for (timeout = 0; timeout < MII_MAXPOLLS; timeout++)
     {
-      if ((getreg32(IMXRT_ENET2_EIR) & ENET_INT_MII) != 0)
+      if ((getreg32(priv->conf.eir) & ENET_INT_MII) != 0)
         {
           break;
         }
@@ -1981,7 +1982,7 @@ static int imxrt_writemii(struct imxrt_driver_s *priv, uint8_t phyaddr,
 
   /* Clear the MII interrupt bit */
 
-  putreg32(ENET_INT_MII, IMXRT_ENET2_EIR);
+  putreg32(ENET_INT_MII, priv->conf.eir);
   return OK;
 }
 
@@ -2009,7 +2010,7 @@ static int imxrt_readmii(struct imxrt_driver_s *priv, uint8_t phyaddr,
 
   /* Clear the MII interrupt bit */
 
-  putreg32(ENET_INT_MII, IMXRT_ENET2_EIR);
+  putreg32(ENET_INT_MII, priv->conf.eir);
 
   /* Initiate the MII Management read */
 
@@ -2018,13 +2019,13 @@ static int imxrt_readmii(struct imxrt_driver_s *priv, uint8_t phyaddr,
            (uint32_t)phyaddr << ENET_MMFR_PA_SHIFT |
            ENET_MMFR_OP_RDMII |
            1 << ENET_MMFR_ST_SHIFT,
-           IMXRT_ENET2_MMFR);
+           priv->conf.mmfr);
 
   /* Wait for the transfer to complete */
 
   for (timeout = 0; timeout < MII_MAXPOLLS; timeout++)
     {
-      if ((getreg32(IMXRT_ENET2_EIR) & ENET_INT_MII) != 0)
+      if ((getreg32(priv->conf.eir) & ENET_INT_MII) != 0)
         {
           break;
         }
@@ -2040,11 +2041,11 @@ static int imxrt_readmii(struct imxrt_driver_s *priv, uint8_t phyaddr,
 
   /* Clear the MII interrupt bit */
 
-  putreg32(ENET_INT_MII, IMXRT_ENET2_EIR);
+  putreg32(ENET_INT_MII, priv->conf.eir);
 
   /* And return the MII data */
 
-  *data = (uint16_t)(getreg32(IMXRT_ENET2_MMFR) & ENET_MMFR_DATA_MASK);
+  *data = (uint16_t)(getreg32(priv->conf.mmfr) & ENET_MMFR_DATA_MASK);
   return OK;
 }
 
@@ -2337,8 +2338,8 @@ static inline int imxrt_initphy(struct imxrt_driver_s *priv, bool renogphy)
 #endif
   tcr = 0;
 
-  putreg32(rcr, IMXRT_ENET2_RCR);
-  putreg32(tcr, IMXRT_ENET2_TCR);
+  putreg32(rcr, priv->conf.rcr);
+  putreg32(tcr, priv->conf.tcr);
 
   /* Enable Discard Of Frames With MAC Layer Errors.
    * Enable Discard Of Frames With Wrong Protocol Checksum.
@@ -2346,7 +2347,7 @@ static inline int imxrt_initphy(struct imxrt_driver_s *priv, bool renogphy)
    */
 
   racc = ENET_RACC_PRODIS | ENET_RACC_LINEDIS | ENET_RACC_IPDIS;
-  putreg32(racc, IMXRT_ENET2_RACC);
+  putreg32(racc, priv->conf.racc);
 
   /* Setup half or full duplex */
 
@@ -2387,8 +2388,8 @@ static inline int imxrt_initphy(struct imxrt_driver_s *priv, bool renogphy)
       return -EIO;
     }
 
-  putreg32(rcr, IMXRT_ENET2_RCR);
-  putreg32(tcr, IMXRT_ENET2_TCR);
+  putreg32(rcr, priv->conf.rcr);
+  putreg32(tcr, priv->conf.tcr);
   return OK;
 }
 
@@ -2493,7 +2494,7 @@ static void imxrt_reset(struct imxrt_driver_s *priv)
 
   /* Set the reset bit and clear the enable bit */
 
-  putreg32(ENET_ECR_RESET, IMXRT_ENET2_ECR);
+  putreg32(ENET_ECR_RESET, priv->conf.ecr);
 
   /* Wait at least 8 clock cycles */
 
@@ -2505,8 +2506,6 @@ static void imxrt_reset(struct imxrt_driver_s *priv)
 
 static int imxrt_enet_irq_attach(struct imxrt_driver_s *priv)
 {
-  // uint8_t phyindex = priv->phyindex;
-  // ninfo("Attaching interrupt handler for ETH%d\n", phyindex);
   int irq = priv->conf.enet_irq;
 
   if (irq_attach(irq, imxrt_enet_interrupt, NULL))
