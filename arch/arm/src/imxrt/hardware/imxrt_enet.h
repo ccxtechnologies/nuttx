@@ -657,7 +657,27 @@
 /*****************************************************************************
  * Public Types
  *****************************************************************************/
-
+struct enet_regaddr_s
+{
+  int enet_irq;
+  uint32_t enet_eir;
+  uint32_t enet_eimr;
+  uint32_t enet_rdar;
+  uint32_t enet_tdar;
+  uint32_t enet_ecr;
+  uint32_t enet_mmfr;
+  uint32_t enet_mscr;
+  uint32_t enet_rcr;
+  uint32_t enet_tcr;
+  uint32_t enet_palr;
+  uint32_t enet_paur;
+  uint32_t enet_gaur;
+  uint32_t enet_galr;
+  uint32_t enet_rdsr;
+  uint32_t enet_tdsr;
+  uint32_t enet_mrbr;
+  uint32_t enet_racc;
+};
 /* Buffer Descriptors ********************************************************/
 
 /* Legacy Buffer Descriptor */

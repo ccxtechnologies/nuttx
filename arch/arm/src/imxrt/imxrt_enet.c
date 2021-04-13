@@ -194,7 +194,6 @@
 #if defined(CONFIG_ETH0_PHY_HI5200) || defined(CONFIG_ETH1_PHY_HI5200)
 #if defined(CONFIG_ETH0_PHY_HI5200)
 #  define BOARD_PHY_NAME        "HI5200-0"
-#  define BOARD_PHY0_INDEX       (0)
 #  define BOARD_PHYID1          MII_PHYID1_HI5200
 #  define BOARD_PHYID2          MII_PHYID2_HI5200
 #  define BOARD_PHY_STATUS      MII_HI5200_PHYCTRL2
@@ -205,7 +204,6 @@
 #endif
 #if defined(CONFIG_ETH1_PHY_HI5200)
 #  define BOARD_PHY_NAME        "HI5200-1"
-#  define BOARD_PHY1_INDEX       (1)
 #  define BOARD_PHYID1          MII_PHYID1_HI5200
 #  define BOARD_PHYID2          MII_PHYID2_HI5200
 #  define BOARD_PHY_STATUS      MII_HI5200_PHYCTRL2
@@ -271,13 +269,13 @@ struct imxrt_driver_s
   uint8_t txhead;              /* The next TX descriptor to use */
   uint8_t rxtail;              /* The next RX descriptor to use */
   uint8_t phyaddr;             /* Selected PHY address */
-  uint8_t phyindex;            /* Selected PHY index */
   struct wdog_s txpoll;        /* TX poll timer */
   struct wdog_s txtimeout;     /* TX timeout timer */
   struct work_s irqwork;       /* For deferring interrupt work to the work queue */
   struct work_s pollwork;      /* For deferring poll work to the work queue */
   struct enet_desc_s *txdesc;  /* A pointer to the list of TX descriptor */
   struct enet_desc_s *rxdesc;  /* A pointer to the list of RX descriptors */
+  struct enet_regaddr_s reg;   /* ENET register addresses */
 
   /* This holds the information visible to the NuttX network */
 
@@ -389,8 +387,6 @@ static int imxrt_initphy(struct imxrt_driver_s *priv, bool renogphy);
 
 static void imxrt_initbuffers(struct imxrt_driver_s *priv);
 static void imxrt_reset(struct imxrt_driver_s *priv);
-static void imxrt_enet_clk_init(struct imxrt_driver_s *priv);
-static void imxrt_enet_gpio_init(struct imxrt_driver_s *priv);
 static int imxrt_enet_irq_attach(struct imxrt_driver_s *priv);
 
 /****************************************************************************
@@ -1130,21 +1126,6 @@ static int imxrt_enet_interrupt(int irq, FAR void *context, FAR void *arg)
       * condition here.
       */
       up_disable_irq(IMXRT_IRQ_ENET);
-
-      /* Schedule to perform the interrupt processing on the worker thread. */
-      // work_queue(ETHWORK, &priv->irqwork, imxrt_enet_interrupt_work, priv, 0);
-      return OK;
-    }
-  else if (irq == IMXRT_IRQ_ENET2)
-    {
-      register FAR struct imxrt_driver_s *priv = &g_enet[1];
-      ninfo("setting register to phyindex = %d\n", priv->phyindex);
-
-      /* Disable further Ethernet interrupts.  Because Ethernet interrupts are
-      * also disabled if the TX timeout event occurs, there can be no race
-      * condition here.
-      */
-      up_disable_irq(IMXRT_IRQ_ENET2);
 
       /* Schedule to perform the interrupt processing on the worker thread. */
       // work_queue(ETHWORK, &priv->irqwork, imxrt_enet_interrupt_work, priv, 0);
@@ -2520,175 +2501,20 @@ static void imxrt_reset(struct imxrt_driver_s *priv)
     }
 }
 
-/****************************************************************************
- * Function: imxrt_enet_clk_init
- *
- * Description:
- *   Init clock for a specified Ethernet interface
- *
- * Input Parameters:
- *   priv - Reference to the private ENET driver state structure
- *
- * Returned Value:
- *   None
- *
- * Assumptions:
- *
- ****************************************************************************/
-
-static void imxrt_enet_clk_init(struct imxrt_driver_s *priv)
-{
-  uint32_t regval;
-  uint8_t phyindex = priv->phyindex;
-  ninfo("Initializing clock for ETH%d\n", phyindex);
-
-  switch (phyindex)
-  {
-#ifdef BOARD_PHY0_INDEX
-    case BOARD_PHY0_INDEX:
-
-      /* Enable ENET1_TX_CLK_DIR (Provides 50MHz clk OUT to PHY) */
-
-      regval = getreg32(IMXRT_IOMUXC_GPR_GPR1);
-      regval |= GPR_GPR1_ENET1_TX_CLK_OUT_EN;
-      putreg32(regval, IMXRT_IOMUXC_GPR_GPR1);
-
-      /* Enable the ENET1 clock.  Clock is on during all modes,
-      * except STOP mode.
-      */
-      imxrt_clockall_enet();
-      break;
-#endif
-
-#ifdef BOARD_PHY1_INDEX
-    case BOARD_PHY1_INDEX:
-
-      /* Enable ENET2_TX_CLK_DIR (Provides 50MHz clk OUT to PHY) */
-
-      regval = getreg32(IMXRT_IOMUXC_GPR_GPR1);
-      regval |= GPR_GPR1_ENET2_TX_CLK_OUT_EN;
-      putreg32(regval, IMXRT_IOMUXC_GPR_GPR1);
-
-      /* Enable the ENET2 clock.  Clock is on during all modes,
-      * except STOP mode.
-      */
-      imxrt_clockall_enet2();
-      break;
-#endif
-
-    default:
-
-      nerr("Incorrect ETH interface specified\n");
-  }
-}
-
-/****************************************************************************
- * Function: imxrt_enet_gpio_init
- *
- * Description:
- *   Init ENET/MII pins for a specified Ethernet interface
- *
- * Input Parameters:
- *   priv - Reference to the private ENET driver state structure
- *
- * Returned Value:
- *   None
- *
- * Assumptions:
- *
- ****************************************************************************/
-
-static void imxrt_enet_gpio_init(struct imxrt_driver_s *priv)
-{
-  uint8_t phyindex = priv->phyindex;
-  ninfo("Intializing GPIO pins for ETH%d\n", phyindex);
-
-  switch (phyindex)
-  {
-#ifdef BOARD_PHY0_INDEX
-    case BOARD_PHY0_INDEX:
-
-      /* Configure all ENET/MII pins */
-      imxrt_config_gpio(GPIO_ENET1_MDIO);
-      imxrt_config_gpio(GPIO_ENET1_MDC);
-      imxrt_config_gpio(GPIO_ENET1_RX_EN);
-      imxrt_config_gpio(GPIO_ENET1_RX_DATA00);
-      imxrt_config_gpio(GPIO_ENET1_RX_DATA01);
-      imxrt_config_gpio(GPIO_ENET1_TX_DATA00);
-      imxrt_config_gpio(GPIO_ENET1_TX_DATA01);
-      imxrt_config_gpio(GPIO_ENET1_TX_CLK);
-      imxrt_config_gpio(GPIO_ENET1_TX_EN);
-#ifdef GPIO_ENET_RX_ER
-      imxrt_config_gpio(GPIO_ENET1_RX_ER);
-#endif
-      break;
-#endif
-
-#ifdef BOARD_PHY1_INDEX
-    case BOARD_PHY1_INDEX:
-
-      /* Configure all ENET2/MII pins */
-      imxrt_config_gpio(GPIO_ENET2_MDIO);
-      imxrt_config_gpio(GPIO_ENET2_MDC);
-      imxrt_config_gpio(GPIO_ENET2_RX_EN);
-      imxrt_config_gpio(GPIO_ENET2_RX_DATA00);
-      imxrt_config_gpio(GPIO_ENET2_RX_DATA01);
-      imxrt_config_gpio(GPIO_ENET2_TX_DATA00);
-      imxrt_config_gpio(GPIO_ENET2_TX_DATA01);
-      imxrt_config_gpio(GPIO_ENET2_TX_CLK);
-      imxrt_config_gpio(GPIO_ENET2_TX_EN);
-#ifdef GPIO_ENET_RX_ER
-      imxrt_config_gpio(GPIO_ENET2_RX_ER);
-#endif
-      break;
-#endif
-
-    default:
-
-      nerr("Incorrect ETH interface specified\n");
-  }
-}
-
 static int imxrt_enet_irq_attach(struct imxrt_driver_s *priv)
 {
   uint8_t phyindex = priv->phyindex;
   ninfo("Attaching interrupt handler for ETH%d\n", phyindex);
-  switch (phyindex)
+
+  if (irq_attach(IMXRT_IRQ_ENET, imxrt_enet_interrupt, NULL))
     {
-#ifdef BOARD_PHY0_INDEX
-      case BOARD_PHY0_INDEX:
+      /* We could not attach the ISR to the interrupt */
 
-        if (irq_attach(IMXRT_IRQ_ENET, imxrt_enet_interrupt, NULL))
-          {
-            /* We could not attach the ISR to the interrupt */
-
-            return -EAGAIN;
-          }
-        else
-          {
-            return OK;
-          }
-#endif
-
-#ifdef BOARD_PHY1_INDEX
-      case BOARD_PHY1_INDEX:
-
-        if (irq_attach(IMXRT_IRQ_ENET2, imxrt_enet_interrupt, NULL))
-          {
-            /* We could not attach the ISR to the interrupt */
-
-            return -EAGAIN;
-          }
-        else
-          {
-            return OK;
-          }
-#endif
-
-      default:
-
-        /* Something is wrong with PHY index */
-        return -ENODEV;
+      return -EAGAIN;
+    }
+  else
+    {
+      return OK;
     }
 
 }
@@ -2723,14 +2549,6 @@ int imxrt_netinitialize(int intf)
 #endif
   int ret;
 
-#ifdef BOARD_PHY0_INDEX
-  ninfo("BOARD_PHY0_INDEX is defined\n");
-#endif
-
-#ifdef BOARD_PHY1_INDEX
-  ninfo("BOARD_PHY1_INDEX is defined\n");
-#endif
-
   /* Get the interface structure associated with this interface number. */
 
   DEBUGASSERT(intf < CONFIG_IMXRT_ENET_NETHIFS);
@@ -2742,25 +2560,64 @@ int imxrt_netinitialize(int intf)
   ninfo("Initializing ETH%d\n", intf);
   ninfo("priv addr = %p\n", (void *) priv);
 
-#ifdef BOARD_PHY0_INDEX
-  if (intf == BOARD_PHY0_INDEX)
+  if (intf == 0)
     {
-      ninfo("Setting phyindex to %d\n", BOARD_PHY0_INDEX);
-      priv->phyindex = BOARD_PHY0_INDEX;
-    }
-#endif
+      /* Enable ENET1_TX_CLK_DIR (Provides 50MHz clk OUT to PHY) */
+      regval = getreg32(IMXRT_IOMUXC_GPR_GPR1);
+      regval |= GPR_GPR1_ENET1_TX_CLK_OUT_EN;
+      putreg32(regval, IMXRT_IOMUXC_GPR_GPR1);
 
-#ifdef BOARD_PHY1_INDEX
-  if (intf == BOARD_PHY1_INDEX)
+      /* Enable the ENET1 clock.  Clock is on during all modes,
+      * except STOP mode.
+      */
+      imxrt_clockall_enet();
+
+      /* Configure all ENET/MII pins */
+      imxrt_config_gpio(GPIO_ENET1_MDIO);
+      imxrt_config_gpio(GPIO_ENET1_MDC);
+      imxrt_config_gpio(GPIO_ENET1_RX_EN);
+      imxrt_config_gpio(GPIO_ENET1_RX_DATA00);
+      imxrt_config_gpio(GPIO_ENET1_RX_DATA01);
+      imxrt_config_gpio(GPIO_ENET1_TX_DATA00);
+      imxrt_config_gpio(GPIO_ENET1_TX_DATA01);
+      imxrt_config_gpio(GPIO_ENET1_TX_CLK);
+      imxrt_config_gpio(GPIO_ENET1_TX_EN);
+#ifdef GPIO_ENET_RX_ER
+      imxrt_config_gpio(GPIO_ENET1_RX_ER);
+#endif
+    }
+  else  if (intf == 1)
     {
-      ninfo("Setting phyindex to %d\n", BOARD_PHY1_INDEX);
-      priv->phyindex = BOARD_PHY1_INDEX;
-    }
-#endif
-  ninfo("priv->phyindex = %d\n", priv->phyindex);
+      /* Enable ENET2_TX_CLK_DIR (Provides 50MHz clk OUT to PHY) */
+      regval = getreg32(IMXRT_IOMUXC_GPR_GPR1);
+      regval |= GPR_GPR1_ENET2_TX_CLK_OUT_EN;
+      putreg32(regval, IMXRT_IOMUXC_GPR_GPR1);
 
-  imxrt_enet_clk_init(priv);
-  imxrt_enet_gpio_init(priv);
+      /* Enable the ENET2 clock.  Clock is on during all modes,
+      * except STOP mode.
+      */
+      imxrt_clockall_enet2();
+
+      /* Configure all ENET2/MII pins */
+      imxrt_config_gpio(GPIO_ENET2_MDIO);
+      imxrt_config_gpio(GPIO_ENET2_MDC);
+      imxrt_config_gpio(GPIO_ENET2_RX_EN);
+      imxrt_config_gpio(GPIO_ENET2_RX_DATA00);
+      imxrt_config_gpio(GPIO_ENET2_RX_DATA01);
+      imxrt_config_gpio(GPIO_ENET2_TX_DATA00);
+      imxrt_config_gpio(GPIO_ENET2_TX_DATA01);
+      imxrt_config_gpio(GPIO_ENET2_TX_CLK);
+      imxrt_config_gpio(GPIO_ENET2_TX_EN);
+#ifdef GPIO_ENET_RX_ER
+      imxrt_config_gpio(GPIO_ENET2_RX_ER);
+#endif
+    }
+  else
+    {
+      nerr("ERROR: wrong interface number supplied. Cannot have \
+            more than %d ETH interfaces", CONFIG_IMXRT_ENET_NETHIFS);
+      return ERROR;
+    }
 
   ret = imxrt_enet_irq_attach(priv);
   if (ret < 0)
