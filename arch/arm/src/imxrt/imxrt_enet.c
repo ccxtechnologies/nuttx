@@ -275,7 +275,7 @@ struct imxrt_driver_s
   struct work_s pollwork;      /* For deferring poll work to the work queue */
   struct enet_desc_s *txdesc;  /* A pointer to the list of TX descriptor */
   struct enet_desc_s *rxdesc;  /* A pointer to the list of RX descriptors */
-  struct enet_regaddr_s reg;   /* ENET register addresses */
+  struct enet_conf_s conf;   /* ENET register addresses and IRQ */
 
   /* This holds the information visible to the NuttX network */
 
@@ -1116,26 +1116,28 @@ static void imxrt_enet_interrupt_work(FAR void *arg)
 
 static int imxrt_enet_interrupt(int irq, FAR void *context, FAR void *arg)
 {
-  if (irq == IMXRT_IRQ_ENET)
+  register FAR struct imxrt_driver_s *priv;
+  size_t num_interfaces = sizeof g_enet / sizeof g_enet[0];
+  ninfo("g_enet[] size = %d\n", num_interfaces);
+  for (int i = 0; i < num_interfaces; i++)
     {
-      register FAR struct imxrt_driver_s *priv = &g_enet[0];
-      ninfo("setting register to phyindex = %d\n", priv->phyindex);
+      priv = &g_enet[i];
+      if (irq == priv->conf.enet_irq)
+        {
+          ninfo("IRQ %d found in g_enet[%d] = %d\n", irq, i, priv->conf.enet_irq);
+          
 
-      /* Disable further Ethernet interrupts.  Because Ethernet interrupts are
-      * also disabled if the TX timeout event occurs, there can be no race
-      * condition here.
-      */
-      up_disable_irq(IMXRT_IRQ_ENET);
-
-      /* Schedule to perform the interrupt processing on the worker thread. */
-      // work_queue(ETHWORK, &priv->irqwork, imxrt_enet_interrupt_work, priv, 0);
-      return OK;
+          /* Disable further Ethernet interrupts.  Because Ethernet interrupts are
+          * also disabled if the TX timeout event occurs, there can be no race
+          * condition here.
+          */
+          up_disable_irq(priv->conf.enet_irq);
+          /* Schedule to perform the interrupt processing on the worker thread. */
+          // work_queue(ETHWORK, &priv->irqwork, imxrt_enet_interrupt_work, priv, 0);
+          return OK;
+        }
     }
-  else
-    {
-
-      return ERROR;
-    }
+  return ERROR;
 }
 
 /****************************************************************************
@@ -2503,10 +2505,11 @@ static void imxrt_reset(struct imxrt_driver_s *priv)
 
 static int imxrt_enet_irq_attach(struct imxrt_driver_s *priv)
 {
-  uint8_t phyindex = priv->phyindex;
-  ninfo("Attaching interrupt handler for ETH%d\n", phyindex);
+  // uint8_t phyindex = priv->phyindex;
+  // ninfo("Attaching interrupt handler for ETH%d\n", phyindex);
+  int irq = priv->conf.enet_irq;
 
-  if (irq_attach(IMXRT_IRQ_ENET, imxrt_enet_interrupt, NULL))
+  if (irq_attach(irq, imxrt_enet_interrupt, NULL))
     {
       /* We could not attach the ISR to the interrupt */
 
@@ -2547,6 +2550,7 @@ int imxrt_netinitialize(int intf)
   uint32_t uidml;
   uint8_t *mac;
 #endif
+  uint32_t regval;
   int ret;
 
   /* Get the interface structure associated with this interface number. */
@@ -2585,6 +2589,24 @@ int imxrt_netinitialize(int intf)
 #ifdef GPIO_ENET_RX_ER
       imxrt_config_gpio(GPIO_ENET1_RX_ER);
 #endif
+      priv->conf.enet_irq = IMXRT_IRQ_ENET;
+      priv->conf.eir = IMXRT_ENET_EIR;
+      priv->conf.eimr = IMXRT_ENET_EIMR;
+      priv->conf.rdar = IMXRT_ENET_RDAR;
+      priv->conf.tdar = IMXRT_ENET_TDAR;
+      priv->conf.ecr = IMXRT_ENET_ECR;
+      priv->conf.mmfr = IMXRT_ENET_MMFR;
+      priv->conf.mscr = IMXRT_ENET_MSCR;
+      priv->conf.rcr = IMXRT_ENET_RCR;
+      priv->conf.tcr = IMXRT_ENET_TCR;
+      priv->conf.palr = IMXRT_ENET_PALR;
+      priv->conf.paur = IMXRT_ENET_PAUR;
+      priv->conf.gaur = IMXRT_ENET_GAUR;
+      priv->conf.galr = IMXRT_ENET_GALR;
+      priv->conf.rdsr = IMXRT_ENET_RDSR;
+      priv->conf.tdsr = IMXRT_ENET_TDSR;
+      priv->conf.mrbr = IMXRT_ENET_MRBR;
+      priv->conf.racc = IMXRT_ENET_RACC;
     }
   else  if (intf == 1)
     {
@@ -2611,6 +2633,24 @@ int imxrt_netinitialize(int intf)
 #ifdef GPIO_ENET_RX_ER
       imxrt_config_gpio(GPIO_ENET2_RX_ER);
 #endif
+      priv->conf.enet_irq = IMXRT_IRQ_ENET2;
+      priv->conf.eir = IMXRT_ENET2_EIR;
+      priv->conf.eimr = IMXRT_ENET2_EIMR;
+      priv->conf.rdar = IMXRT_ENET2_RDAR;
+      priv->conf.tdar = IMXRT_ENET2_TDAR;
+      priv->conf.ecr = IMXRT_ENET2_ECR;
+      priv->conf.mmfr = IMXRT_ENET2_MMFR;
+      priv->conf.mscr = IMXRT_ENET2_MSCR;
+      priv->conf.rcr = IMXRT_ENET2_RCR;
+      priv->conf.tcr = IMXRT_ENET2_TCR;
+      priv->conf.palr = IMXRT_ENET2_PALR;
+      priv->conf.paur = IMXRT_ENET2_PAUR;
+      priv->conf.gaur = IMXRT_ENET2_GAUR;
+      priv->conf.galr = IMXRT_ENET2_GALR;
+      priv->conf.rdsr = IMXRT_ENET2_RDSR;
+      priv->conf.tdsr = IMXRT_ENET2_TDSR;
+      priv->conf.mrbr = IMXRT_ENET2_MRBR;
+      priv->conf.racc = IMXRT_ENET2_RACC;
     }
   else
     {
@@ -2622,7 +2662,7 @@ int imxrt_netinitialize(int intf)
   ret = imxrt_enet_irq_attach(priv);
   if (ret < 0)
     {
-      nerr("ERROR: Failed to attach EMAC%dTX IRQ\n", priv->phyindex);
+      nerr("ERROR: Failed to attach EMAC%dTX IRQ\n", intf);
       return ret;
     }
 
