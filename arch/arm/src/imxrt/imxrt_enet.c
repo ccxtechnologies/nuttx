@@ -193,7 +193,7 @@
  */
 #if defined(CONFIG_ETH0_PHY_HI5200) || defined(CONFIG_ETH1_PHY_HI5200)
 #if defined(CONFIG_ETH0_PHY_HI5200)
-#  define BOARD_PHY_NAME        "HI5200-0"
+#  define BOARD_PHY_NAME        "HI5200"
 #  define BOARD_PHYID1          MII_PHYID1_HI5200
 #  define BOARD_PHYID2          MII_PHYID2_HI5200
 #  define BOARD_PHY_STATUS      MII_HI5200_PHYCTRL2
@@ -203,7 +203,7 @@
 #  define BOARD_PHY_ISDUPLEX(s) (((s) & MII_HI5200_PHYCTRL2_MODE_DUPLEX) != 0)
 #endif
 #if defined(CONFIG_ETH1_PHY_HI5200)
-#  define BOARD_PHY_NAME        "HI5200-1"
+#  define BOARD_PHY_NAME        "HI5200"
 #  define BOARD_PHYID1          MII_PHYID1_HI5200
 #  define BOARD_PHYID2          MII_PHYID2_HI5200
 #  define BOARD_PHY_STATUS      MII_HI5200_PHYCTRL2
@@ -1117,14 +1117,12 @@ static int imxrt_enet_interrupt(int irq, FAR void *context, FAR void *arg)
 {
   register FAR struct imxrt_driver_s *priv;
   size_t num_interfaces = sizeof g_enet / sizeof g_enet[0];
-  ninfo("g_enet[] size = %d\n", num_interfaces);
 
   for (int i = 0; i < num_interfaces; i++)
     {
       priv = &g_enet[i];
       if (irq == priv->enet_irq)
         {
-          ninfo("IRQ %d found in g_enet[%d] = %d\n", irq, i, priv->enet_irq);
           
 
           /* Disable further Ethernet interrupts.  Because Ethernet interrupts are
@@ -2084,7 +2082,7 @@ static inline int imxrt_initphy(struct imxrt_driver_s *priv, bool renogphy)
        * at this point.
        */
 
-      ninfo("%s: Try phyaddr: %u\n", BOARD_PHY_NAME, phyaddr);
+      ninfo("%s-%d: Try phyaddr: %u\n", BOARD_PHY_NAME, priv->enet_irq, phyaddr);
 
       /* Try to read PHYID1 few times using this address */
 
@@ -2093,8 +2091,8 @@ static inline int imxrt_initphy(struct imxrt_driver_s *priv, bool renogphy)
         {
           nxsig_usleep(LINK_WAITUS);
 
-          ninfo("%s: Read PHYID1, retries=%d\n",
-                BOARD_PHY_NAME, retries + 1);
+          ninfo("%s-%d: Read PHYID1, retries=%d\n",
+                BOARD_PHY_NAME, priv->enet_irq, retries + 1);
 
           phydata = 0xffff;
           ret     = imxrt_readmii(priv, phyaddr, MII_PHYID1, &phydata);
@@ -2103,21 +2101,21 @@ static inline int imxrt_initphy(struct imxrt_driver_s *priv, bool renogphy)
 
       if (retries >= 3)
         {
-          nerr("ERROR: Failed to read %s PHYID1 at address %d\n",
-               BOARD_PHY_NAME, phyaddr);
+          nerr("ERROR: Failed to read %s-%d PHYID1 at address %d\n",
+               BOARD_PHY_NAME, priv->enet_irq, phyaddr);
           return -ENOENT;
         }
 
-      ninfo("%s: Using PHY address %u\n", BOARD_PHY_NAME, phyaddr);
+      ninfo("%s-%d: Using PHY address %u\n", BOARD_PHY_NAME, priv->enet_irq, phyaddr);
       priv->phyaddr = phyaddr;
 
       /* Verify PHYID1.  Compare OUI bits 3-18 */
 
-      ninfo("%s: PHYID1: %04x\n", BOARD_PHY_NAME, phydata);
+      ninfo("%s-%d: PHYID1: %04x\n", BOARD_PHY_NAME, priv->enet_irq, phydata);
       if (phydata != BOARD_PHYID1)
         {
-          nerr("ERROR: PHYID1=%04x incorrect for %s.  Expected %04x\n",
-               phydata, BOARD_PHY_NAME, BOARD_PHYID1);
+          nerr("ERROR: PHYID1=%04x incorrect for %s-%d.  Expected %04x\n",
+               phydata, BOARD_PHY_NAME, priv->enet_irq, BOARD_PHYID1);
           return -ENXIO;
         }
 
@@ -2126,11 +2124,11 @@ static inline int imxrt_initphy(struct imxrt_driver_s *priv, bool renogphy)
       ret = imxrt_readmii(priv, phyaddr, MII_PHYID2, &phydata);
       if (ret < 0)
         {
-          nerr("ERROR: Failed to read %s PHYID2: %d\n", BOARD_PHY_NAME, ret);
+          nerr("ERROR: Failed to read %s-%d PHYID2: %d\n", BOARD_PHY_NAME, priv->enet_irq, ret);
           return ret;
         }
 
-      ninfo("%s: PHYID2: %04x\n", BOARD_PHY_NAME, phydata);
+      ninfo("%s-%d: PHYID2: %04x\n", BOARD_PHY_NAME, priv->enet_irq, phydata);
 
       /* Verify PHYID2:  Compare OUI bits 19-24 and the 6-bit model number
        * (ignoring the 4-bit revision number).
@@ -2138,8 +2136,8 @@ static inline int imxrt_initphy(struct imxrt_driver_s *priv, bool renogphy)
 
       if ((phydata & 0xfff0) != (BOARD_PHYID2 & 0xfff0))
         {
-          nerr("ERROR: PHYID2=%04x incorrect for %s.  Expected %04x\n",
-               (phydata & 0xfff0), BOARD_PHY_NAME, (BOARD_PHYID2 & 0xfff0));
+          nerr("ERROR: PHYID2=%04x incorrect for %s-%d.  Expected %04x\n",
+               (phydata & 0xfff0), BOARD_PHY_NAME, priv->enet_irq, (BOARD_PHYID2 & 0xfff0));
           return -ENXIO;
         }
 
@@ -2237,7 +2235,7 @@ static inline int imxrt_initphy(struct imxrt_driver_s *priv, bool renogphy)
 
       /* Start auto negotiation */
 
-      ninfo("%s: Start Autonegotiation...\n",  BOARD_PHY_NAME);
+      ninfo("%s-%d: Start Autonegotiation...\n",  BOARD_PHY_NAME, priv->enet_irq);
       imxrt_writemii(priv, phyaddr, MII_MCR,
                      (MII_MCR_ANRESTART | MII_MCR_ANENABLE));
 
@@ -2248,8 +2246,8 @@ static inline int imxrt_initphy(struct imxrt_driver_s *priv, bool renogphy)
           ret = imxrt_readmii(priv, phyaddr, MII_MSR, &phydata);
           if (ret < 0)
             {
-              nerr("ERROR: Failed to read %s MII_MSR: %d\n",
-                    BOARD_PHY_NAME, ret);
+              nerr("ERROR: Failed to read %s-%d MII_MSR: %d\n",
+                    BOARD_PHY_NAME, priv->enet_irq, ret);
               return ret;
             }
 
@@ -2263,8 +2261,8 @@ static inline int imxrt_initphy(struct imxrt_driver_s *priv, bool renogphy)
 
       if (phydata & MII_MSR_ANEGCOMPLETE)
         {
-          ninfo("%s: Autonegotiation complete\n",  BOARD_PHY_NAME);
-          ninfo("%s: MII_MSR: %04x\n", BOARD_PHY_NAME, phydata);
+          ninfo("%s-%d: Autonegotiation complete\n",  BOARD_PHY_NAME, priv->enet_irq);
+          ninfo("%s-%d: MII_MSR: %04x\n", BOARD_PHY_NAME, priv->enet_irq, phydata);
         }
       else
         {
@@ -2274,9 +2272,9 @@ static inline int imxrt_initphy(struct imxrt_driver_s *priv, bool renogphy)
            * MCU whenever the link is ready.
            */
 
-          ninfo("%s: Autonegotiation failed [%d] (is cable plugged-in ?), "
+          ninfo("%s-%d: Autonegotiation failed [%d] (is cable plugged-in ?), "
                 "default to 10Mbs mode\n", \
-                BOARD_PHY_NAME, retries);
+                BOARD_PHY_NAME, priv->enet_irq, retries);
 
           /* Stop auto negotiation */
 
@@ -2314,13 +2312,13 @@ static inline int imxrt_initphy(struct imxrt_driver_s *priv, bool renogphy)
         {
           /* That didn't end well, just give up */
 
-          nerr("ERROR: Failed to read %s BOARD_PHY_STATUS[%02x]: %d\n",
-               BOARD_PHY_NAME, BOARD_PHY_STATUS, ret);
+          nerr("ERROR: Failed to read %s-%d BOARD_PHY_STATUS[%02x]: %d\n",
+               BOARD_PHY_NAME, priv->enet_irq, BOARD_PHY_STATUS, ret);
           return ret;
         }
     }
 
-  ninfo("%s: BOARD_PHY_STATUS: %04x\n", BOARD_PHY_NAME, phydata);
+  ninfo("%s-%d: BOARD_PHY_STATUS: %04x\n", BOARD_PHY_NAME, priv->enet_irq, phydata);
 
   /* Set up the transmit and receive control registers based on the
    * configuration and the auto negotiation results.
@@ -2354,14 +2352,14 @@ static inline int imxrt_initphy(struct imxrt_driver_s *priv, bool renogphy)
     {
       /* Full duplex */
 
-      ninfo("%s: Full duplex\n",  BOARD_PHY_NAME);
+      ninfo("%s-%d: Full duplex\n",  BOARD_PHY_NAME, priv->enet_irq);
       tcr |= ENET_TCR_FDEN;
     }
   else
     {
       /* Half duplex */
 
-      ninfo("%s: Half duplex\n",  BOARD_PHY_NAME);
+      ninfo("%s-%d: Half duplex\n",  BOARD_PHY_NAME, priv->enet_irq);
       rcr |= ENET_RCR_DRT;
     }
 
@@ -2369,14 +2367,14 @@ static inline int imxrt_initphy(struct imxrt_driver_s *priv, bool renogphy)
     {
       /* 10 Mbps */
 
-      ninfo("%s: 10 Base-T\n",  BOARD_PHY_NAME);
+      ninfo("%s-%d: 10 Base-T\n",  BOARD_PHY_NAME, priv->enet_irq);
       rcr |= ENET_RCR_RMII_10T;
     }
   else if (BOARD_PHY_100BASET(phydata))
     {
       /* 100 Mbps */
 
-      ninfo("%s: 100 Base-T\n",  BOARD_PHY_NAME);
+      ninfo("%s-%d: 100 Base-T\n",  BOARD_PHY_NAME, priv->enet_irq);
     }
   else
     {
@@ -2559,8 +2557,6 @@ int imxrt_netinitialize(int intf)
   /* Alloc the driver structure to assign PHY index */
 
   memset(priv, 0, sizeof(struct imxrt_driver_s));
-  ninfo("Initializing ETH%d\n", intf);
-  ninfo("priv addr = %p\n", (void *) priv);
 
   if (intf == 0)
     {
