@@ -287,9 +287,7 @@ struct imxrt_driver_s
  * Private Data
  ****************************************************************************/
 
-#warning @TODO Bring it back later
-// static struct imxrt_driver_s g_enet[CONFIG_IMXRT_ENET_NETHIFS];
-static struct imxrt_driver_s g_enet[2];
+static struct imxrt_driver_s g_enet[CONFIG_IMXRT_ENET_NETHIFS];
 
 /* The DMA descriptors.  A unaligned uint8_t is used to allocate the
  * memory; 16 is added to assure that we can meet the descriptor alignment
