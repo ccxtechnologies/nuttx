@@ -915,9 +915,13 @@ static int netdev_ifr_ioctl(FAR struct socket *psock, int cmd,
 
                   netdev_ifdown(dev);
                 }
+              
+              ret = OK;
             }
-
-          ret = OK;
+          else
+            {
+              ret = -EINVAL;
+            }
         }
         break;
 
