@@ -122,10 +122,8 @@ static const struct gpio_operations_s gpout_ops =
 
 static const uint32_t g_gpiooutputs[BOARD_NGPIOOUT] =
 {
-  GPIO_GOUT1,
-  GPIO_GOUT2,
-  GPIO_GOUT3,
-  GPIO_GOUT4,
+  GPIO_FLEXCAN3_A_EN,
+  GPIO_FLEXCAN3_B_EN,
 };
 
 static struct imxrtgpio_dev_s g_gpout[BOARD_NGPIOOUT];

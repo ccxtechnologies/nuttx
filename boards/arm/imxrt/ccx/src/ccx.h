@@ -76,10 +76,8 @@
 *
 *
 */
-#define BOARD_NGPIOIN   1 /* Amount of GPIO Input pins */
-#define BOARD_NGPIOOUT  0 /* Amount of GPIO Output pins */
-#define GPIO_GP_INPUT1        (GPIO_INPUT | IOMUX_GOUT_DEFAULT | \
-                         GPIO_PORT4 | GPIO_PIN16)  /* EMC_16 */
+#define BOARD_NGPIOIN   0 /* Amount of GPIO Input pins */
+#define BOARD_NGPIOOUT  2 /* Amount of GPIO Output pins */
 
 
 /* Ethernet */
