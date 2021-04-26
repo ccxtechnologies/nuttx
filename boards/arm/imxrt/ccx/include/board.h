@@ -286,7 +286,7 @@
 
 /* FlexCAN */
 
-#define GPIO_FLEXCAN3_TX     (GPIO_FLEXCAN3_TX_2|IOMUX_CAN_DEFAULT)
+#define GPIO_FLEXCAN3_TX     (GPIO_FLEXCAN3_TX_2|IOMUX_CAN_DEFAULT|IOMUX_PULL_UP_47K)
 #define GPIO_FLEXCAN3_RX     (GPIO_FLEXCAN3_RX_2|IOMUX_CAN_DEFAULT)
 
 /****************************************************************************
