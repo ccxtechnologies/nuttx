@@ -135,7 +135,7 @@ int arch_phy_irq(FAR const char *intf, xcpt_t handler, void *arg,
   DEBUGASSERT(intf);
 
   ninfo("%s: handler=%p\n", intf, handler);
-  phyinfo("EMAC: devname=%s\n", intf == 1 ? IMXRT_ENET1_DEVNAME : IMXRT_ENET2_DEVNAME);
+  phyinfo("EMAC: devname=%s\n", intf);
 
   if (handler == NULL)
     {
