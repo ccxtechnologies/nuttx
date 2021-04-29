@@ -2560,6 +2560,7 @@ int imxrt_netinitialize(int intf)
 
   if (intf == 0)
     {
+      ninfo("Configuring GPIO for eth0\n");
       /* Enable ENET1_TX_CLK_DIR (Provides 50MHz clk OUT to PHY) */
       regval = getreg32(IMXRT_IOMUXC_GPR_GPR1);
       regval |= GPR_GPR1_ENET1_TX_CLK_OUT_EN;
@@ -2580,7 +2581,7 @@ int imxrt_netinitialize(int intf)
       imxrt_config_gpio(GPIO_ENET1_TX_DATA01);
       imxrt_config_gpio(GPIO_ENET1_TX_CLK);
       imxrt_config_gpio(GPIO_ENET1_TX_EN);
-#ifdef GPIO_ENET_RX_ER
+#ifdef GPIO_ENET1_RX_ER
       imxrt_config_gpio(GPIO_ENET1_RX_ER);
 #endif
       priv->enet_irq = IMXRT_IRQ_ENET;
@@ -2604,6 +2605,7 @@ int imxrt_netinitialize(int intf)
     }
   else  if (intf == 1)
     {
+      ninfo("Configuring GPIO for eth1\n");
       /* Enable ENET2_TX_CLK_DIR (Provides 50MHz clk OUT to PHY) */
       regval = getreg32(IMXRT_IOMUXC_GPR_GPR1);
       regval |= GPR_GPR1_ENET2_TX_CLK_OUT_EN;
@@ -2624,7 +2626,7 @@ int imxrt_netinitialize(int intf)
       imxrt_config_gpio(GPIO_ENET2_TX_DATA01);
       imxrt_config_gpio(GPIO_ENET2_TX_CLK);
       imxrt_config_gpio(GPIO_ENET2_TX_EN);
-#ifdef GPIO_ENET_RX_ER
+#ifdef GPIO_ENET2_RX_ER
       imxrt_config_gpio(GPIO_ENET2_RX_ER);
 #endif
       priv->enet_irq = IMXRT_IRQ_ENET2;
@@ -2649,10 +2651,11 @@ int imxrt_netinitialize(int intf)
   else
     {
       nerr("ERROR: wrong interface number supplied. Cannot have \
-            more than %d ETH interfaces", CONFIG_IMXRT_ENET_NETHIFS);
+            more than %d ETH interfaces\n", CONFIG_IMXRT_ENET_NETHIFS);
       return ERROR;
     }
 
+  ninfo("Attaching ISR to interrupt for eth%d\n", intf);
   ret = imxrt_enet_irq_attach(priv);
   if (ret < 0)
     {
@@ -2660,6 +2663,7 @@ int imxrt_netinitialize(int intf)
       return ret;
     }
 
+  ninfo("adding callbacks for eth%d\n", intf);
   priv->dev.d_ifup    = imxrt_ifup;     /* I/F up (new IP address) callback */
   priv->dev.d_ifdown  = imxrt_ifdown;   /* I/F down callback */
   priv->dev.d_txavail = imxrt_txavail;  /* New TX data callback */
@@ -2673,6 +2677,7 @@ int imxrt_netinitialize(int intf)
   priv->dev.d_private = &g_enet[intf];         /* Used to recover private state from dev */
 
 #ifdef CONFIG_NET_ETHERNET
+  ninfo("adding mac addr to eth%d\n", intf);
   /* Determine a semi-unique MAC address from MCU UID
    * We use UID Low and Mid Low registers to get 64 bits, from which we keep
    * 48 bits.  We then force unicast and locally administered bits
@@ -2698,7 +2703,7 @@ int imxrt_netinitialize(int intf)
 
 #ifdef CONFIG_IMXRT_ENET_PHYINIT
   /* Perform any necessary, one-time, board-specific PHY initialization */
-
+  ninfo("Calling imxrt_phy_boardinitialize() for eth%d\n", intf);
   ret = imxrt_phy_boardinitialize(intf);
   if (ret < 0)
     {
@@ -2707,12 +2712,14 @@ int imxrt_netinitialize(int intf)
     }
 #endif
 
+  ninfo("Putting the interface eth%d DOWN\n", intf);
   /* Put the interface in the down state.  This usually amounts to resetting
    * the device and/or calling imxrt_ifdown().
    */
 
   imxrt_ifdown(&priv->dev);
 
+  ninfo("Register the device eth%d\n", intf);
   /* Register the device with the OS so that socket IOCTLs can be performed */
 
   netdev_register(&priv->dev, NET_LL_ETHERNET);
