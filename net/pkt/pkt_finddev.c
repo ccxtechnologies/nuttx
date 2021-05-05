@@ -39,7 +39,6 @@
 
 #include <nuttx/config.h>
 #if defined(CONFIG_NET) && defined(CONFIG_NET_PKT)
-
 #include <nuttx/net/netdev.h>
 
 #include "netdev/netdev.h"
@@ -65,9 +64,9 @@
 
 FAR struct net_driver_s *pkt_find_device(FAR struct pkt_conn_s *conn)
 {
-  /* REVISIT:  This is bogus.  A better network device lookup is needed. */
+  FAR struct pkt_conn_s *s_conn = conn;
 
-  return netdev_findbyname("eth0");
+  return netdev_findbyindex(s_conn->ifindex);
 }
 
 #endif /* CONFIG_NET && CONFIG_NET_PKT */
