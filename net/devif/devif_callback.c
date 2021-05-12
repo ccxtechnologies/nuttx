@@ -263,9 +263,10 @@ FAR struct devif_callback_s *
            * And if it does, should that device also not be in the UP state?
            */
 
-          if (!netdev_verify(dev) && (dev->d_flags & IFF_UP) != 0)
+          if (!netdev_verify(dev) || !(dev->d_flags & IFF_UP))
             {
               /* No.. release the callback structure and fail */
+              nwarn("Device %s invalid or DOWN\n", dev->d_ifname);
 
               devif_callback_free(NULL, NULL, list);
               net_unlock();
