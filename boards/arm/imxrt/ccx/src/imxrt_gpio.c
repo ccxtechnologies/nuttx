@@ -102,7 +102,10 @@ static const struct gpio_operations_s gpin_ops =
 
 static const uint32_t g_gpioinputs[BOARD_NGPIOIN] =
 {
-  GPIO_GP_INPUT1,
+  GPIO_GP_INPUT1,   /* gpin0 */
+  GPIO_GP_INPUT2,   /* gpin1 */
+  GPIO_GP_INPUT3,   /* gpin2 */
+  GPIO_GP_INPUT4,   /* gpin3 */
 };
 
 static struct imxrtgpio_dev_s g_gpin[BOARD_NGPIOIN];
@@ -122,8 +125,13 @@ static const struct gpio_operations_s gpout_ops =
 
 static const uint32_t g_gpiooutputs[BOARD_NGPIOOUT] =
 {
-  GPIO_FLEXCAN3_A_EN,
-  GPIO_FLEXCAN3_B_EN,
+  GPIO_RESET_OUTPUT1,   /* gpout4 */
+  GPIO_RESET_OUTPUT2,   /* gpout5 */
+  GPIO_SOFTWARE_RST_N,  /* gpout6 */
+  GPIO_LED_RED,         /* gpout7 */
+  GPIO_LED_BLUE,        /* gpout8 */
+  GPIO_FLEXCAN3_A_EN,   /* gpout9 */
+  GPIO_FLEXCAN3_B_EN,   /* gpout10 */
 };
 
 static struct imxrtgpio_dev_s g_gpout[BOARD_NGPIOOUT];

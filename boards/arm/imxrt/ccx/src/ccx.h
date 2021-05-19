@@ -76,9 +76,24 @@
 *
 *
 */
-#define BOARD_NGPIOIN   0 /* Amount of GPIO Input pins */
-#define BOARD_NGPIOOUT  2 /* Amount of GPIO Output pins */
+#define BOARD_NGPIOIN   4 /* Amount of GPIO Input pins */
+#define BOARD_NGPIOOUT  7 /* Amount of GPIO Output pins (CAN3_EN_A/B + LED_RED/BLUE) */
 
+#define GPIO_GP_INPUT1  (GPIO_INPUT | IOMUX_SW_DEFAULT | \
+                         GPIO_PORT4 | GPIO_PIN16)   /* EMC_16 */
+#define GPIO_GP_INPUT2  (GPIO_INPUT | IOMUX_SW_DEFAULT | \
+                         GPIO_PORT4 | GPIO_PIN15)   /* EMC_15 */
+#define GPIO_GP_INPUT3  (GPIO_INPUT | IOMUX_SW_DEFAULT | \
+                         GPIO_PORT4 | GPIO_PIN23)   /* EMC_23 */
+#define GPIO_GP_INPUT4  (GPIO_INPUT | IOMUX_SW_DEFAULT | \
+                         GPIO_PORT4 | GPIO_PIN24)   /* EMC_24 */
+
+#define GPIO_RESET_OUTPUT1  (GPIO_OUTPUT | GPIO_OUTPUT_ZERO | \
+                             IOMUX_SW_DEFAULT | GPIO_PORT3 |GPIO_PIN26) /* EMC_40 */
+#define GPIO_RESET_OUTPUT2  (GPIO_OUTPUT | GPIO_OUTPUT_ZERO | \
+                             IOMUX_SW_DEFAULT | GPIO_PORT3 |GPIO_PIN27) /* EMC_41 */
+#define GPIO_SOFTWARE_RST_N (GPIO_OUTPUT | GPIO_OUTPUT_ZERO | \
+                             IOMUX_SW_DEFAULT | GPIO_PORT3 |GPIO_PIN26) /* EMC_40 */
 
 /* Ethernet */
 /* Ethernet Reset:  GPIO_B1_00
