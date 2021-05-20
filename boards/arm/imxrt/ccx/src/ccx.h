@@ -92,8 +92,8 @@
                              IOMUX_SW_DEFAULT | GPIO_PORT3 |GPIO_PIN26) /* EMC_40 */
 #define GPIO_RESET_OUTPUT2  (GPIO_OUTPUT | GPIO_OUTPUT_ZERO | \
                              IOMUX_SW_DEFAULT | GPIO_PORT3 |GPIO_PIN27) /* EMC_41 */
-#define GPIO_SOFTWARE_RST_N (GPIO_OUTPUT | GPIO_OUTPUT_ZERO | \
-                             IOMUX_SW_DEFAULT | GPIO_PORT3 |GPIO_PIN26) /* EMC_40 */
+#define GPIO_SOFTWARE_RST_N (GPIO_OUTPUT | GPIO_OUTPUT_ONE | \
+                             IOMUX_SW_DEFAULT | GPIO_PORT2 |GPIO_PIN29) /* B1_13 */
 
 /* Ethernet */
 /* Ethernet Reset:  GPIO_B1_00
