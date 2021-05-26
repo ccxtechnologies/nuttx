@@ -130,8 +130,12 @@ static const uint32_t g_gpiooutputs[BOARD_NGPIOOUT] =
   GPIO_SOFTWARE_RST_N,  /* gpout6 */
   GPIO_LED_RED,         /* gpout7 */
   GPIO_LED_BLUE,        /* gpout8 */
-  GPIO_FLEXCAN3_A_EN,   /* gpout9 */
-  GPIO_FLEXCAN3_B_EN,   /* gpout10 */
+  GPIO_FLEXCAN1_A_EN,   /* gpout9 */
+  GPIO_FLEXCAN1_B_EN,   /* gpout10 */
+  GPIO_FLEXCAN2_A_EN,   /* gpout11 */
+  GPIO_FLEXCAN2_B_EN,   /* gpout12 */
+  GPIO_FLEXCAN3_A_EN,   /* gpout13 */
+  GPIO_FLEXCAN3_B_EN,   /* gpout14 */
 };
 
 static struct imxrtgpio_dev_s g_gpout[BOARD_NGPIOOUT];

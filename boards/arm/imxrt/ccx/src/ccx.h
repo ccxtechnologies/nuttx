@@ -77,7 +77,7 @@
 *
 */
 #define BOARD_NGPIOIN   4 /* Amount of GPIO Input pins */
-#define BOARD_NGPIOOUT  7 /* Amount of GPIO Output pins (CAN3_EN_A/B + LED_RED/BLUE) */
+#define BOARD_NGPIOOUT  11 /* Amount of GPIO Output pins (CAN3_EN_A/B + LED_RED/BLUE) */
 
 #define GPIO_GP_INPUT1  (GPIO_INPUT | IOMUX_SW_DEFAULT | \
                          GPIO_PORT4 | GPIO_PIN16)   /* EMC_16 */
@@ -129,6 +129,38 @@
                            _IOMUX_PULL_ENABLE)
 #define GPIO_ADC_RESET2 (GPIO_OUTPUT | GPIO_OUTPUT_ONE | \
                          GPIO_PORT3 | GPIO_PIN9 | IOMUX_ADC_RESET2)
+
+/* FlexCAN1 A_EN: GPIO_AD_B1_14 */
+
+#define IOMUX_FLEXCAN1_A_EN (IOMUX_SLEW_FAST | IOMUX_DRIVE_50OHM | \
+                         IOMUX_SPEED_MEDIUM | IOMUX_PULL_DOWN_100K | \
+                         _IOMUX_PULL_ENABLE)
+#define GPIO_FLEXCAN1_A_EN  (GPIO_OUTPUT | GPIO_OUTPUT_ZERO | \
+                         GPIO_PORT1 | GPIO_PIN30 | IOMUX_FLEXCAN1_A_EN)
+
+/* FlexCAN1 B_EN: GPIO_AD_B1_15 */
+
+#define IOMUX_FLEXCAN1_B_EN (IOMUX_SLEW_FAST | IOMUX_DRIVE_50OHM | \
+                         IOMUX_SPEED_MEDIUM | IOMUX_PULL_DOWN_100K | \
+                         _IOMUX_PULL_ENABLE)
+#define GPIO_FLEXCAN1_B_EN  (GPIO_OUTPUT | GPIO_OUTPUT_ZERO | \
+                         GPIO_PORT1 | GPIO_PIN31 | IOMUX_FLEXCAN1_B_EN)
+
+/* FlexCAN2 A_EN: GPIO_EMC_07 */
+
+#define IOMUX_FLEXCAN2_A_EN (IOMUX_SLEW_FAST | IOMUX_DRIVE_50OHM | \
+                         IOMUX_SPEED_MEDIUM | IOMUX_PULL_DOWN_100K | \
+                         _IOMUX_PULL_ENABLE)
+#define GPIO_FLEXCAN2_A_EN  (GPIO_OUTPUT | GPIO_OUTPUT_ZERO | \
+                         GPIO_PORT4 | GPIO_PIN7 | IOMUX_FLEXCAN2_A_EN)
+
+/* FlexCAN2 B_EN: GPIO_EMC_08 */
+
+#define IOMUX_FLEXCAN2_B_EN (IOMUX_SLEW_FAST | IOMUX_DRIVE_50OHM | \
+                         IOMUX_SPEED_MEDIUM | IOMUX_PULL_DOWN_100K | \
+                         _IOMUX_PULL_ENABLE)
+#define GPIO_FLEXCAN2_B_EN  (GPIO_OUTPUT | GPIO_OUTPUT_ZERO | \
+                         GPIO_PORT4 | GPIO_PIN8 | IOMUX_FLEXCAN2_B_EN)
 
 /* FlexCAN3 A_EN: GPIO_SD_B1_03 */
 
