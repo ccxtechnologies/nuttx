@@ -77,7 +77,7 @@
 *
 */
 #define BOARD_NGPIOIN   4 /* Amount of GPIO Input pins */
-#define BOARD_NGPIOOUT  11 /* Amount of GPIO Output pins (CAN3_EN_A/B + LED_RED/BLUE) */
+#define BOARD_NGPIOOUT  5 /* Amount of GPIO Output pins (+ LED_RED/BLUE) */
 
 #define GPIO_GP_INPUT1  (GPIO_INPUT | IOMUX_SW_DEFAULT | \
                          GPIO_PORT4 | GPIO_PIN16)   /* EMC_16 */

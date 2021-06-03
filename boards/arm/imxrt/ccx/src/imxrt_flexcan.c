@@ -71,7 +71,7 @@ int imxrt_can_setup(void)
       return -ENODEV;
     }
 
-#elif CONFIG_IMXRT_FLEXCAN2
+#elif defined CONFIG_IMXRT_FLEXCAN2
   imxrt_config_gpio(GPIO_FLEXCAN2_A_EN);
   imxrt_gpio_write(GPIO_FLEXCAN2_A_EN, 1);
   imxrt_config_gpio(GPIO_FLEXCAN2_B_EN);
@@ -85,7 +85,7 @@ int imxrt_can_setup(void)
       return -ENODEV;
     }
 
-#elif CONFIG_IMXRT_FLEXCAN3
+#elif defined CONFIG_IMXRT_FLEXCAN3
   imxrt_config_gpio(GPIO_FLEXCAN3_A_EN);
   imxrt_gpio_write(GPIO_FLEXCAN3_A_EN, 1);
   imxrt_config_gpio(GPIO_FLEXCAN3_B_EN);
