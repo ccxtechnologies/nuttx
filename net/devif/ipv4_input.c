@@ -207,11 +207,11 @@ int ipv4_input(FAR struct net_driver_s *dev)
   if ((ipv4->ipoffset[0] & 0x3f) != 0 || ipv4->ipoffset[1] != 0)
     {
 #ifdef CONFIG_NET_STATISTICS
-       g_netstats.ipv4.drop++;
-       g_netstats.ipv4.fragerr++;
+      g_netstats.ipv4.drop++;
+      g_netstats.ipv4.fragerr++;
 #endif
-       nwarn("WARNING: IP fragment dropped\n");
-       goto drop;
+      nwarn("WARNING: IP fragment dropped\n");
+      goto drop;
     }
 
   /* Get the destination IP address in a friendlier form */
@@ -234,16 +234,6 @@ int ipv4_input(FAR struct net_driver_s *dev)
       ipv4_forward_broadcast(dev, ipv4);
 #endif
       return udp_ipv4_input(dev);
-    }
-  else
-#endif
-#ifdef CONFIG_NET_ICMP
-  /* In other cases, the device must be assigned a non-zero IP address. */
-
-  if (net_ipv4addr_cmp(dev->d_ipaddr, INADDR_ANY))
-    {
-      nwarn("WARNING: No IP address assigned\n");
-      goto drop;
     }
   else
 #endif
@@ -307,6 +297,14 @@ int ipv4_input(FAR struct net_driver_s *dev)
             }
           else
 #endif
+#if defined(NET_UDP_HAVE_STACK) && defined(CONFIG_NET_UDP_BINDTODEVICE)
+          /* If the UDP protocol specific socket option UDP_BINDTODEVICE
+           * is selected, then we must forward all UDP packets to the bound
+           * socket.
+           */
+
+          if (ipv4->proto != IP_PROTO_UDP || !IFF_IS_BOUND(dev->d_flags))
+#endif
             {
               /* Not destined for us and not forwardable... Drop the
                * packet.
@@ -322,6 +320,16 @@ int ipv4_input(FAR struct net_driver_s *dev)
             }
         }
     }
+#ifdef CONFIG_NET_ICMP
+
+  /* In other cases, the device must be assigned a non-zero IP address. */
+
+  else if (net_ipv4addr_cmp(dev->d_ipaddr, INADDR_ANY))
+    {
+      nwarn("WARNING: No IP address assigned\n");
+      goto drop;
+    }
+#endif
 
   if (ipv4_chksum(dev) != 0xffff)
     {

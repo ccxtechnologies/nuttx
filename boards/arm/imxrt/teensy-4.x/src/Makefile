@@ -1,5 +1,5 @@
 ############################################################################
-# boards/arm/imxrt/teensy-4.x/sec/Makefile
+# boards/arm/imxrt/teensy-4.x/src/Makefile
 #
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
@@ -52,6 +52,10 @@ endif
 
 ifeq ($(CONFIG_IMXRT_ADC),y)
 CSRCS += imxrt_adc.c
+endif
+
+ifeq ($(CONFIG_LCD_ST7789),y)
+CSRCS += imxrt_st7789.c
 endif
 
 include $(TOPDIR)/boards/Board.mk

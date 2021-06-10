@@ -52,6 +52,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <assert.h>
 #include <errno.h>
 #include <debug.h>
 
@@ -77,10 +78,6 @@
 /****************************************************************************
  * Pre-processor Definitions
  ****************************************************************************/
-
-#if defined(CONFIG_NET_TCP_SPLIT) && !defined(CONFIG_NET_TCP_SPLIT_SIZE)
-#  define CONFIG_NET_TCP_SPLIT_SIZE 40
-#endif
 
 #define TCPIPv4BUF ((struct tcp_hdr_s *)&dev->d_buf[NET_LL_HDRLEN(dev) + IPv4_HDRLEN])
 #define TCPIPv6BUF ((struct tcp_hdr_s *)&dev->d_buf[NET_LL_HDRLEN(dev) + IPv6_HDRLEN])
@@ -299,7 +296,7 @@ static uint16_t sendfile_eventhandler(FAR struct net_driver_s *dev,
 
       /* Check if we have "space" in the window */
 
-      if ((pstate->snd_sent - pstate->snd_acked + sndlen) < conn->winsize)
+      if ((pstate->snd_sent - pstate->snd_acked + sndlen) < conn->snd_wnd)
         {
           uint32_t seqno;
 

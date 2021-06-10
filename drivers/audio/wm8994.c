@@ -1,4 +1,4 @@
-/***********************************************************************************
+/****************************************************************************
  * drivers/audio/wm8994.c
  *
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -16,11 +16,11 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  *
- ***********************************************************************************/
+ ****************************************************************************/
 
-/***********************************************************************************
+/****************************************************************************
  * Included Files
- ***********************************************************************************/
+ ****************************************************************************/
 
 #include <nuttx/config.h>
 
@@ -31,6 +31,7 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <string.h>
+#include <assert.h>
 #include <errno.h>
 #include <fixedmath.h>
 #include <queue.h>
@@ -48,7 +49,6 @@
 #include <nuttx/audio/i2s.h>
 #include <nuttx/audio/audio.h>
 #include <nuttx/audio/wm8994.h>
-#include <nuttx/lib/math.h>
 
 #include "wm8994.h"
 
@@ -73,9 +73,9 @@
 #define WM8994_DEFAULT_INPUT_DEVICE                           (WM8994_INPUT_DEVICE_DIGITAL_MIC1_MIC2)
 #define WM8994_STARTUP_MODE_COLD                              (1)
 
-/***********************************************************************************
+/****************************************************************************
  * Private Function Prototypes
- ***********************************************************************************/
+ ****************************************************************************/
 
 #if !defined(CONFIG_WM8994_REGDUMP) && !defined(CONFIG_WM8994_CLKDEBUG)
 static
@@ -578,11 +578,11 @@ static void  wm8994_senddone(FAR struct i2s_dev_s *i2s,
    */
 
   msg.msg_id = AUDIO_MSG_COMPLETE;
-  ret = nxmq_send(priv->mq, (FAR const char *)&msg, sizeof(msg),
-                  CONFIG_WM8994_MSG_PRIO);
+  ret = file_mq_send(&priv->mq, (FAR const char *)&msg, sizeof(msg),
+                     CONFIG_WM8994_MSG_PRIO);
   if (ret < 0)
     {
-      auderr("ERROR: nxmq_send failed: %d\n", ret);
+      auderr("ERROR: file_mq_send failed: %d\n", ret);
     }
 }
 
@@ -775,13 +775,13 @@ static int wm8994_start(FAR struct audio_lowerhalf_s *dev)
   attr.mq_curmsgs = 0;
   attr.mq_flags   = 0;
 
-  priv->mq = mq_open(priv->mqname, O_RDWR | O_CREAT, 0644, &attr);
-  if (priv->mq == NULL)
+  ret = file_mq_open(&priv->mq, priv->mqname, O_RDWR | O_CREAT, 0644, &attr);
+  if (ret < 0)
     {
       /* Error creating message queue! */
 
       auderr("ERROR: Couldn't allocate message queue\n");
-      return -ENOMEM;
+      return ret;
     }
 
   /* Join any old worker thread we had created to prevent a memory leak */
@@ -837,8 +837,9 @@ static int wm8994_stop(FAR struct audio_lowerhalf_s *dev)
 
   term_msg.msg_id = AUDIO_MSG_STOP;
   term_msg.u.data = 0;
-  (void)nxmq_send(priv->mq, (FAR const char *)&term_msg, sizeof(term_msg),
-                  CONFIG_WM8994_MSG_PRIO);
+  (void)file_mq_send(&priv->mq, (FAR const char *)&term_msg,
+                     sizeof(term_msg),
+                     CONFIG_WM8994_MSG_PRIO);
 
   /* Join the worker thread */
 
@@ -939,22 +940,23 @@ static int wm8994_enqueuebuffer(FAR struct audio_lowerhalf_s *dev,
   dq_addlast(&apb->dq_entry, &priv->pendq);
   wm8994_givesem(&priv->pendsem);
 
-  /* Send a message to the worker thread indicating that a new buffer has been
-   * enqueued.  If mq is NULL, then the playing has not yet started.  In that
-   * case we are just "priming the pump" and we don't need to send any message.
+  /* Send a message to the worker thread indicating that a new buffer has
+   * been enqueued.  If mq is NULL, then the playing has not yet started.
+   * In that case we are just "priming the pump" and we don't need to send
+   * any message.
    */
 
   ret = OK;
-  if (priv->mq != NULL)
+  if (priv->mq.f_inode != NULL)
     {
       term_msg.msg_id  = AUDIO_MSG_ENQUEUE;
       term_msg.u.data = 0;
 
-      ret = nxmq_send(priv->mq, (FAR const char *)&term_msg,
-                      sizeof(term_msg), CONFIG_WM8994_MSG_PRIO);
+      ret = file_mq_send(&priv->mq, (FAR const char *)&term_msg,
+                         sizeof(term_msg), CONFIG_WM8994_MSG_PRIO);
       if (ret < 0)
         {
-          auderr("ERROR: nxmq_send failed: %d\n", ret);
+          auderr("ERROR: file_mq_send failed: %d\n", ret);
         }
     }
 
@@ -1256,7 +1258,8 @@ static void *wm8994_workerthread(pthread_addr_t pvarg)
 
       /* Wait for messages from our message queue */
 
-      msglen = nxmq_receive(priv->mq, (FAR char *)&msg, sizeof(msg), &prio);
+      msglen = file_mq_receive(&priv->mq, (FAR char *)&msg,
+                               sizeof(msg), &prio);
 
       /* Handle the case when we return with no message */
 
@@ -1341,9 +1344,8 @@ static void *wm8994_workerthread(pthread_addr_t pvarg)
 
   /* Close the message queue */
 
-  mq_close(priv->mq);
-  mq_unlink(priv->mqname);
-  priv->mq = NULL;
+  file_mq_close(&priv->mq);
+  file_mq_unlink(priv->mqname);
 
   /* Send an AUDIO_MSG_COMPLETE message to the client */
 
@@ -1588,7 +1590,8 @@ static void wm8994_hw_reset(FAR struct wm8994_dev_s *priv)
           wm8994_writereg(priv, WM8994_DAC2_RIGHT_MIXER_ROUTING, regval);
           break;
         case WM8994_OUTPUT_DEVICE_BOTH:
-          if (WM8994_DEFAULT_INPUT_DEVICE == WM8994_INPUT_DEVICE_DIGITAL_MIC1_MIC2)
+          if (WM8994_DEFAULT_INPUT_DEVICE ==
+              WM8994_INPUT_DEVICE_DIGITAL_MIC1_MIC2)
           {
             wm8994_writereg(priv, 0x005, 0x0303 | 0x0c0c);
             wm8994_writereg(priv, 0x601, 0x0003);
@@ -1925,9 +1928,9 @@ static void wm8994_hw_reset(FAR struct wm8994_dev_s *priv)
   wm8994_clock_analysis(&priv->dev, "After configuration");
 }
 
-/***********************************************************************************
+/****************************************************************************
  * Public Functions
- ***********************************************************************************/
+ ****************************************************************************/
 
 /* Name: wm8994_initialize
  *
@@ -1991,9 +1994,9 @@ FAR struct audio_lowerhalf_s *
       wm8994_writereg(priv, WM8994_SWRST, 0);
       wm8994_dump_registers(&priv->dev, "After reset");
 
-      /* chip revison */
+      /* chip revision */
 
-      audinfo("wm8994 chip revison: %d\n",
+      audinfo("wm8994 chip revision: %d\n",
                 wm8994_readreg(priv, WM8994_CHIP_REV));
 
       /* Reset and reconfigure the WM8994 hardwaqre */

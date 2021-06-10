@@ -121,6 +121,10 @@ int       rand(void);
 #define   srandom(s) srand(s)
 long      random(void);
 
+#ifdef CONFIG_CRYPTO_RANDOM_POOL
+void      arc4random_buf(FAR void *bytes, size_t nbytes);
+#endif
+
 /* Environment variable support */
 
 FAR char **get_environ_ptr(void);
@@ -196,6 +200,7 @@ size_t    wcstombs(FAR char *dst, FAR const wchar_t *src, size_t len);
 /* Memory Management */
 
 FAR void *malloc(size_t);
+FAR void *valloc(size_t);
 void      free(FAR void *);
 FAR void *realloc(FAR void *, size_t);
 FAR void *memalign(size_t, size_t);
@@ -206,12 +211,9 @@ int       posix_memalign(FAR void **, size_t, size_t);
 
 /* Pseudo-Terminals */
 
-#ifdef CONFIG_PSEUDOTERM_SUSV1
+#ifdef CONFIG_PSEUDOTERM
 FAR char *ptsname(int fd);
 int       ptsname_r(int fd, FAR char *buf, size_t buflen);
-#endif
-
-#ifdef CONFIG_PSEUDOTERM
 int       unlockpt(int fd);
 
 /* int grantpt(int fd); Not implemented */

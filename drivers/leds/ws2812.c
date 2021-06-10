@@ -1,5 +1,5 @@
 /****************************************************************************
- * drivers/sensors/ws2812.c
+ * drivers/leds/ws2812.c
  *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -78,17 +78,17 @@
 #define WS2812_RW_PIXEL_SIZE  4
 
 /* Transmit buffer looks like:
- * [<----reset bytes---->|<-RGBn->...<-RGB0->|<----reset bytes---->]
+ * [<----N reset bytes---->|<-RGBn->...<-RGB0->|<----1 reset byte---->]
  *
  * It is important that this is shipped as close to one chunk as possible
  * in order to meet timing requirements and to keep MOSI from going high
  * between transactions.  Some chips will leave MOSI at the state of the
  * MSB of the last byte for this reason it is recommended to shift the
  * bits that represents the zero or one waveform so that the MSB is 0.
- * The reset clocks will pad the shortened low at the end.
+ * The reset byte after the RGB data will pad the shortened low at the end.
  */
 
-#define TXBUFF_SIZE(n) (WS2812_RST_CYCLES * 2 + n * WS2812_BYTES_PER_LED)
+#define TXBUFF_SIZE(n) (WS2812_RST_CYCLES + n * WS2812_BYTES_PER_LED + 1)
 
 /****************************************************************************
  * Private Types
@@ -267,8 +267,7 @@ static ssize_t ws2812_write(FAR struct file *filep, FAR const char *buffer,
   if (buffer == NULL)
     {
       lederr("ERROR: Buffer is null\n");
-      set_errno(EINVAL);
-      return -1;
+      return -EINVAL;
     }
 
   /* We need at least one LED, so 1 byte */
@@ -276,15 +275,13 @@ static ssize_t ws2812_write(FAR struct file *filep, FAR const char *buffer,
   if (buflen < 1)
     {
       lederr("ERROR: You need to control at least 1 LED!\n");
-      set_errno(EINVAL);
-      return -1;
+      return -EINVAL;
     }
 
   if ((buflen % WS2812_RW_PIXEL_SIZE) != 0)
     {
       lederr("ERROR: LED values must be 24bit packed in 32bit\n");
-      set_errno(EINVAL);
-      return -1;
+      return -EINVAL;
     }
 
   nxsem_wait(&priv->exclsem);

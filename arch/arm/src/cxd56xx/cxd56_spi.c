@@ -1,36 +1,20 @@
 /****************************************************************************
  * arch/arm/src/cxd56xx/cxd56_spi.c
  *
- *   Copyright (C) 2015-2016 Gregory Nutt. All rights reserved.
- *   Author: Gregory Nutt <gnutt@nuttx.org>
- *   Copyright 2018 Sony Semiconductor Solutions Corporation
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.  The
+ * ASF licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the
+ * License.  You may obtain a copy of the License at
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in
- *    the documentation and/or other materials provided with the
- *    distribution.
- * 3. Neither the name NuttX nor the names of its contributors may be
- *    used to endorse or promote products derived from this software
- *    without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
- * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
- * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
  *
  ****************************************************************************/
 
@@ -44,11 +28,13 @@
 #include <inttypes.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <assert.h>
 #include <errno.h>
 #include <debug.h>
 #include <string.h>
 
 #include <arch/board/board.h>
+#include <arch/chip/pm.h>
 #include <nuttx/irq.h>
 #include <nuttx/arch.h>
 #include <nuttx/semaphore.h>
@@ -343,6 +329,11 @@ static struct cxd56_spidev_s g_spi3dev =
 };
 #endif
 
+/* Inhibit clock change */
+
+static struct pm_cpu_freqlock_s g_hold_lock =
+  PM_CPUFREQLOCK_INIT(0, PM_CPUFREQLOCK_FLAG_HOLD);
+
 /****************************************************************************
  * Public Data
  ****************************************************************************/
@@ -519,6 +510,7 @@ static void spi_setmode(FAR struct spi_dev_s *dev, enum spi_mode_e mode)
 {
   FAR struct cxd56_spidev_s *priv = (FAR struct cxd56_spidev_s *)dev;
   uint32_t regval;
+  uint32_t cr1val;
 
   /* Has the mode changed? */
 
@@ -561,7 +553,18 @@ static void spi_setmode(FAR struct spi_dev_s *dev, enum spi_mode_e mode)
             return;
         }
 
+      /* Disable SSE */
+
+      cr1val = spi_getreg(priv, CXD56_SPI_CR1_OFFSET);
+      spi_putreg(priv, CXD56_SPI_CR1_OFFSET, cr1val & ~SPI_CR1_SSE);
+
       spi_putreg(priv, CXD56_SPI_CR0_OFFSET, regval);
+
+      /* Enable SSE after a few microseconds delay */
+
+      up_udelay(3);
+
+      spi_putreg(priv, CXD56_SPI_CR1_OFFSET, cr1val);
 
       /* Enable clock gating (clock disable) */
 
@@ -659,6 +662,10 @@ static uint32_t spi_send(FAR struct spi_dev_s *dev, uint32_t wd)
   register uint32_t regval;
   register uint32_t cr1val = 0;
 
+  /* Prohibit the clock change during SPI transfer */
+
+  up_pm_acquire_freqlock(&g_hold_lock);
+
   /* Disable clock gating (clock enable) */
 
   cxd56_spi_clock_gate_disable(priv->port);
@@ -698,6 +705,10 @@ static uint32_t spi_send(FAR struct spi_dev_s *dev, uint32_t wd)
   /* Enable clock gating (clock disable) */
 
   cxd56_spi_clock_gate_enable(priv->port);
+
+  /* Allow the clock change after SPI transfer */
+
+  up_pm_release_freqlock(&g_hold_lock);
 
   return regval;
 }
@@ -752,6 +763,10 @@ static void spi_do_exchange(FAR struct spi_dev_s *dev,
 
   tx.pv = txbuffer;
   rx.pv = rxbuffer;
+
+  /* Prohibit the clock change during SPI transfer */
+
+  up_pm_acquire_freqlock(&g_hold_lock);
 
   /* Disable clock gating (clock enable) */
 
@@ -827,6 +842,10 @@ static void spi_do_exchange(FAR struct spi_dev_s *dev,
   /* Enable clock gating (clock disable) */
 
   cxd56_spi_clock_gate_enable(priv->port);
+
+  /* Allow the clock change after SPI transfer */
+
+  up_pm_release_freqlock(&g_hold_lock);
 }
 
 /****************************************************************************
@@ -1366,6 +1385,10 @@ void spi_flush(FAR struct spi_dev_s *dev)
   FAR struct cxd56_spidev_s *priv = (FAR struct cxd56_spidev_s *)dev;
   uint32_t regval                 = 0;
 
+  /* Prohibit the clock change during SPI transfer */
+
+  up_pm_acquire_freqlock(&g_hold_lock);
+
   /* Disable clock gating (clock enable) */
 
   cxd56_spi_clock_gate_disable(priv->port);
@@ -1409,6 +1432,10 @@ void spi_flush(FAR struct spi_dev_s *dev)
   /* Enable clock gating (clock disable) */
 
   cxd56_spi_clock_gate_enable(priv->port);
+
+  /* Allow the clock change after SPI transfer */
+
+  up_pm_release_freqlock(&g_hold_lock);
 }
 
 #ifdef CONFIG_CXD56_DMAC
@@ -1429,6 +1456,10 @@ static void spi_dmaexchange(FAR struct spi_dev_s *dev,
   uint32_t regval                 = 0;
 
   DEBUGASSERT(priv && priv->spibase);
+
+  /* Prohibit the clock change during SPI transfer */
+
+  up_pm_acquire_freqlock(&g_hold_lock);
 
   /* Disable clock gating (clock enable) */
 
@@ -1466,6 +1497,10 @@ static void spi_dmaexchange(FAR struct spi_dev_s *dev,
   /* Enable clock gating (clock disable) */
 
   cxd56_spi_clock_gate_enable(priv->port);
+
+  /* Allow the clock change after SPI transfer */
+
+  up_pm_release_freqlock(&g_hold_lock);
 }
 
 #ifndef CONFIG_SPI_EXCHANGE

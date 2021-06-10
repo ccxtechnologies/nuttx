@@ -1,36 +1,20 @@
 /****************************************************************************
  * fs/vfs/fs_fcntl.c
  *
- *   Copyright (C) 2009, 2012-2014, 2016-2017 Gregory Nutt. All rights
- *     reserved.
- *   Author: Gregory Nutt <gnutt@nuttx.org>
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.  The
+ * ASF licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the
+ * License.  You may obtain a copy of the License at
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in
- *    the documentation and/or other materials provided with the
- *    distribution.
- * 3. Neither the name NuttX nor the names of its contributors may be
- *    used to endorse or promote products derived from this software
- *    without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
- * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
- * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
  *
  ****************************************************************************/
 
@@ -53,29 +37,14 @@
 #include "inode/inode.h"
 
 /****************************************************************************
- * Public Functions
+ * Private Functions
  ****************************************************************************/
 
 /****************************************************************************
  * Name: file_vfcntl
- *
- * Description:
- *   Similar to the standard vfcntl function except that is accepts a struct
- *   struct file instance instead of a file descriptor.
- *
- * Input Parameters:
- *   filep - Instance for struct file for the opened file.
- *   cmd   - Identifies the operation to be performed.
- *   ap    - Variable argument following the command.
- *
- * Returned Value:
- *   The nature of the return value depends on the command.  Non-negative
- *   values indicate success.  Failures are reported as negated errno
- *   values.
- *
  ****************************************************************************/
 
-int file_vfcntl(FAR struct file *filep, int cmd, va_list ap)
+static int file_vfcntl(FAR struct file *filep, int cmd, va_list ap)
 {
   int ret = -EINVAL;
 
@@ -245,6 +214,52 @@ int file_vfcntl(FAR struct file *filep, int cmd, va_list ap)
 }
 
 /****************************************************************************
+ * Name: nx_vfcntl
+ ****************************************************************************/
+
+static int nx_vfcntl(int fd, int cmd, va_list ap)
+{
+  FAR struct file *filep;
+  int ret;
+
+  /* Get the file structure corresponding to the file descriptor. */
+
+  ret = fs_getfilep(fd, &filep);
+  if (ret >= 0)
+    {
+      DEBUGASSERT(filep != NULL);
+
+      /* check for operations on a socket descriptor */
+
+#ifdef CONFIG_NET
+      if (INODE_IS_SOCKET(filep->f_inode) &&
+          cmd != F_DUPFD && cmd != F_GETFD && cmd != F_SETFD)
+        {
+          /* Yes.. defer socket descriptor operations to
+           * psock_vfcntl(). The errno is not set on failures.
+           */
+
+          ret = psock_vfcntl(sockfd_socket(fd), cmd, ap);
+        }
+      else
+#endif
+        {
+          /* Let file_vfcntl() do the real work.  The errno is not set on
+           * failures.
+           */
+
+          ret = file_vfcntl(filep, cmd, ap);
+        }
+    }
+
+  return ret;
+}
+
+/****************************************************************************
+ * Public Functions
+ ****************************************************************************/
+
+/****************************************************************************
  * Name: file_fcntl
  *
  * Description:
@@ -283,17 +298,14 @@ int file_fcntl(FAR struct file *filep, int cmd, ...)
 }
 
 /****************************************************************************
- * Name: nx_fcntl and nx_vfcntl
+ * Name: nx_fcntl
  *
  * Description:
  *   nx_fcntl() is similar to the standard 'fcntl' interface except that is
  *   not a cancellation point and it does not modify the errno variable.
  *
- *   nx_vfcntl() is identical except that it accepts a va_list as an argument
- *   versus taking a variable length list of arguments.
- *
- *   nx_fcntl() and nx_vfcntl are internal NuttX interface and should not be
- *   called from applications.
+ *   nx_fcntl() is an internal NuttX interface and should not be called
+ *   from applications.
  *
  * Returned Value:
  *   Returns a non-negative number on success;  A negated errno value is
@@ -301,54 +313,6 @@ int file_fcntl(FAR struct file *filep, int cmd, ...)
  *   errno values).
  *
  ****************************************************************************/
-
-int nx_vfcntl(int fd, int cmd, va_list ap)
-{
-  FAR struct file *filep;
-  int ret;
-
-  /* Did we get a valid file descriptor? */
-
-  if (fd < CONFIG_NFILE_DESCRIPTORS)
-    {
-      /* Get the file structure corresponding to the file descriptor. */
-
-      ret = fs_getfilep(fd, &filep);
-      if (ret >= 0)
-        {
-          DEBUGASSERT(filep != NULL);
-
-          /* Let file_vfcntl() do the real work.  The errno is not set on
-           * failures.
-           */
-
-          ret = file_vfcntl(filep, cmd, ap);
-        }
-    }
-  else
-    {
-      /* No... check for operations on a socket descriptor */
-
-#ifdef CONFIG_NET
-      if (fd < (CONFIG_NFILE_DESCRIPTORS + CONFIG_NSOCKET_DESCRIPTORS))
-        {
-          /* Yes.. defer socket descriptor operations to net_vfcntl(). The
-           * errno is not set on failures.
-           */
-
-          ret = net_vfcntl(fd, cmd, ap);
-        }
-      else
-#endif
-        {
-          /* No.. this descriptor number is out of range */
-
-          ret = -EBADF;
-        }
-    }
-
-  return ret;
-}
 
 int nx_fcntl(int fd, int cmd, ...)
 {

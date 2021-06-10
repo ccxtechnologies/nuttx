@@ -2,35 +2,20 @@
  * wireless/bluetooth/bt_netdev.c
  * Network stack interface
  *
- *   Copyright (C) 2018 Gregory Nutt. All rights reserved.
- *   Author: Gregory Nutt <gnutt@nuttx.org>
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.  The
+ * ASF licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the
+ * License.  You may obtain a copy of the License at
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in
- *    the documentation and/or other materials provided with the
- *    distribution.
- * 3. Neither the name NuttX nor the names of its contributors may be
- *    used to endorse or promote products derived from this software
- *    without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
- * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
- * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
  *
  ****************************************************************************/
 
@@ -50,8 +35,7 @@
 
 #include <arpa/inet.h>
 
-#include <nuttx/arch.h>
-#include <nuttx/irq.h>
+#include <nuttx/spinlock.h>
 #include <nuttx/kmalloc.h>
 #include <nuttx/signal.h>
 #include <nuttx/wdog.h>
@@ -615,7 +599,6 @@ drop:
 
   /* Release our reference on the buffer */
 
-  bt_buf_release(buf);
   net_unlock();
 }
 
@@ -809,7 +792,7 @@ static int btnet_ifdown(FAR struct net_driver_s *netdev)
 
   /* Disable interruption */
 
-  flags = spin_lock_irqsave();
+  flags = spin_lock_irqsave(NULL);
 
   /* Cancel the TX poll timer and TX timeout timers */
 
@@ -823,7 +806,7 @@ static int btnet_ifdown(FAR struct net_driver_s *netdev)
   /* Mark the device "down" */
 
   priv->bd_bifup = false;
-  spin_unlock_irqrestore(flags);
+  spin_unlock_irqrestore(NULL, flags);
   return OK;
 }
 
@@ -1222,7 +1205,8 @@ static int  btnet_req_hci_data(FAR struct btnet_driver_s *priv,
           return -ENOMEM;
         }
 
-      g_btdev.btdev->send(g_btdev.btdev, buf);
+      bt_send(g_btdev.btdev, buf);
+      bt_buf_release(buf);
 
       /* Transfer the frame to the Bluetooth stack. */
 
@@ -1287,7 +1271,7 @@ static int btnet_properties(FAR struct radio_driver_s *netdev,
  *
  ****************************************************************************/
 
-int bt_netdev_register(FAR const struct bt_driver_s *btdev)
+int bt_netdev_register(FAR struct bt_driver_s *btdev)
 {
   FAR struct btnet_driver_s *priv;
   FAR struct radio_driver_s *radio;
@@ -1369,6 +1353,8 @@ int bt_netdev_register(FAR const struct bt_driver_s *btdev)
   radio->r_get_mhrlen = btnet_get_mhrlen;  /* Get MAC header length */
   radio->r_req_data   = btnet_req_data;    /* Enqueue frame for transmission */
   radio->r_properties = btnet_properties;  /* Return radio properties */
+
+  btdev->receive      = bt_receive;
 
   /* Associate the driver in with the Bluetooth stack.
    *

@@ -36,17 +36,6 @@
  * Pre-processor Definitions
  ****************************************************************************/
 
-/* In mstatus register */
-
-#define MSTATUS_MIE   (0x1 << 3)  /* Machine Interrupt Enable */
-#define MSTATUS_MPIE  (0x1 << 7)  /* Machine Previous Interrupt Enable */
-#define MSTATUS_MPPM  (0x3 << 11) /* Machine Previous Privilege (m-mode) */
-
-/* In mie (machine interrupt enable) register */
-
-#define MIE_MTIE      (0x1 << 7)  /* Machine Timer Interrupt Enable */
-#define MIE_MEIE      (0x1 << 11) /* Machine External Interrupt Enable */
-
 /* Configuration ************************************************************/
 
 /* How many nested system calls should we support? */
@@ -125,12 +114,10 @@
 
 #define REG_INT_CTX_NDX     32
 
-#ifdef CONFIG_ARCH_CHIP_GAP8
-/* 31 registers, ePC, plus 6 loop registers */
-
-#  define INT_XCPT_REGS     (32 + 6)
+#ifdef CONFIG_ARCH_RISCV_INTXCPT_EXTREGS
+  #define INT_XCPT_REGS     (33 + CONFIG_ARCH_RISCV_INTXCPT_EXTREGS)
 #else
-#  define INT_XCPT_REGS     33
+  #define INT_XCPT_REGS     33
 #endif
 
 #define INT_XCPT_SIZE       (4 * INT_XCPT_REGS)
@@ -466,10 +453,6 @@ struct xcptcontext
 };
 
 #endif /* __ASSEMBLY__ */
-
-/****************************************************************************
- * Public Variables
- ****************************************************************************/
 
 /****************************************************************************
  * Public Function Prototypes

@@ -33,7 +33,6 @@
 #  include <stdint.h>
 #  include <stdbool.h>
 #  include <arch/arch.h>
-#  include <semaphore.h>
 #  include <time.h>
 #  include <debug.h>
 #  include <nuttx/config.h>
@@ -95,7 +94,7 @@
 #define IRQ14   46 /* Primary ATA channel */
 #define IRQ15   47 /* Secondary ATA channel */
 
-#define IRQ_ERROR    51 /* APIC Error */
+#define IRQ_ERROR    51   /* APIC Error */
 #define IRQ_SPURIOUS 0xff /* Spurious Interrupts */
 
 #define NR_IRQS 48
@@ -173,7 +172,6 @@ struct xcptcontext
    * to be processed.
    */
 
-#ifndef CONFIG_DISABLE_SIGNALS
   void *sigdeliver; /* Actual type is sig_deliver_t */
 
   /* These are saved copies of instruction pointer and EFLAGS used during
@@ -183,7 +181,6 @@ struct xcptcontext
   uint64_t saved_rip;
   uint64_t saved_rflags;
   uint64_t saved_rsp;
-#endif
 
   /* Register save area */
 

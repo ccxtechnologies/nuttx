@@ -368,16 +368,6 @@ void inode_release(FAR struct inode *inode);
 int foreach_inode(foreach_inode_t handler, FAR void *arg);
 
 /****************************************************************************
- * Name: files_initialize
- *
- * Description:
- *   This is called from the FS initialization logic to configure the files.
- *
- ****************************************************************************/
-
-void weak_function files_initialize(void);
-
-/****************************************************************************
  * Name: files_allocate
  *
  * Description:
@@ -387,32 +377,7 @@ void weak_function files_initialize(void);
  ****************************************************************************/
 
 int files_allocate(FAR struct inode *inode, int oflags, off_t pos,
-                   int minfd);
-
-/****************************************************************************
- * Name: files_close
- *
- * Description:
- *   Close an inode (if open)
- *
- * Assumptions:
- *   Caller holds the list semaphore because the file descriptor will be
- *   freed.
- *
- ****************************************************************************/
-
-int files_close(int fd);
-
-/****************************************************************************
- * Name: files_release
- *
- * Assumptions:
- *   Similar to files_close().  Called only from open() logic on error
- *   conditions.
- *
- ****************************************************************************/
-
-void files_release(int fd);
+                   FAR void *priv, int minfd);
 
 #undef EXTERN
 #if defined(__cplusplus)

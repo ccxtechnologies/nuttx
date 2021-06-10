@@ -1,35 +1,20 @@
 /****************************************************************************
  * arch/arm/src/cxd56xx/cxd56_scu.c
  *
- *   Copyright 2018 Sony Semiconductor Solutions Corporation
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.  The
+ * ASF licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the
+ * License.  You may obtain a copy of the License at
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in
- *    the documentation and/or other materials provided with the
- *    distribution.
- * 3. Neither the name of Sony Semiconductor Solutions Corporation nor
- *    the names of its contributors may be used to endorse or promote
- *    products derived from this software without specific prior written
- *    permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
- * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
- * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
  *
  ****************************************************************************/
 
@@ -40,12 +25,14 @@
 #include <nuttx/config.h>
 #include <nuttx/kmalloc.h>
 #include <nuttx/irq.h>
+#include <nuttx/signal.h>
 #include <nuttx/semaphore.h>
 
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
+#include <assert.h>
 #include <debug.h>
 #include <errno.h>
 
@@ -210,10 +197,10 @@ struct cxd56_scudev_s
   uint8_t oneshot;    /* Bitmap for Oneshots */
 
   sem_t oneshotwait[3]; /* Semaphore for wait oneshot sequence is done */
-#ifndef CONFIG_DISABLE_SIGNAL
+  int oneshoterr[3];    /* error code for oneshot sequencer */
+
   struct ev_notify_s event[3]; /* MATHFUNC event notify */
   struct wm_notify_s wm[14];   /* Watermark notify */
-#endif
   int currentreq;
 };
 
@@ -288,7 +275,6 @@ static void seq_setdecimation(int wid, uint8_t ratio, uint8_t leveladj,
                               uint8_t forcethrough);
 static int seq_setwatermark(FAR struct seq_s *seq, int fifoid,
                             FAR struct scufifo_wm_s *wm);
-#ifndef CONFIG_DISABLE_SIGNAL
 static void convert_firsttimestamp(struct scutimestamp_s *tm,
                                    uint16_t interval, uint16_t sample,
                                    uint16_t adjust);
@@ -296,7 +282,6 @@ static void latest_timestamp(struct scufifo_s *fifo, uint32_t interval,
                              struct scutimestamp_s *tm, uint16_t *samples);
 static void seq_gettimestamp(struct scufifo_s *fifo,
                              struct scutimestamp_s *tm);
-#endif
 
 static int seq_oneshot(int bustype, int slave, FAR uint16_t *inst,
                        uint32_t nr_insts, FAR uint8_t *buffer, int len);
@@ -1083,6 +1068,7 @@ static int seq_oneshot(int bustype, int slave, FAR uint16_t *inst,
   putreg32(1 << (tid + 24), SCU_INT_ENABLE_MAIN);
 
   scuinfo("Sequencer start.\n");
+  priv->oneshoterr[tid] = 0;
 
   /* Start sequencer as one shot mode */
 
@@ -1099,7 +1085,11 @@ static int seq_oneshot(int bustype, int slave, FAR uint16_t *inst,
 
   scuinfo("Sequencer done.\n");
 
-  if (buffer)
+  if (priv->oneshoterr[tid] < 0)
+    {
+      ret = ERROR;
+    }
+  else
     {
       /* Copy sequencer output results to user buffer.
        * XXX: Sequencer output RAM offset is differ from document.
@@ -1492,10 +1482,8 @@ static void seq_handlefifointr(FAR struct cxd56_scudev_s *priv,
 {
   uint32_t bit;
   int i;
-#ifndef CONFIG_DISABLE_SIGNAL
   struct wm_notify_s *notify;
   union sigval value;
-#endif
 
   if ((intr & 0x007ffe00) == 0)
     {
@@ -1512,7 +1500,6 @@ static void seq_handlefifointr(FAR struct cxd56_scudev_s *priv,
 
           putreg32(bit, SCU_INT_CLEAR_MAIN);
 
-#ifndef CONFIG_DISABLE_SIGNAL
           notify = &priv->wm[i];
 
           if (notify->ts)
@@ -1523,8 +1510,7 @@ static void seq_handlefifointr(FAR struct cxd56_scudev_s *priv,
           DEBUGASSERT(notify->pid != 0);
 
           value.sival_ptr = notify->ts;
-          sigqueue(notify->pid, notify->signo, value);
-#endif
+          nxsig_queue(notify->pid, notify->signo, value);
         }
     }
 }
@@ -1544,10 +1530,8 @@ static void seq_handlemathfintr(FAR struct cxd56_scudev_s *priv,
   uint32_t bit;
   uint32_t rise;
   uint32_t fall;
-#ifndef CONFIG_DISABLE_SIGNAL
   struct ev_notify_s *notify;
   int detected = 0;
-#endif
 
   rise = (intr >> 6) & 0x7;
   fall = (intr >> 28) & 0x7;
@@ -1559,16 +1543,14 @@ static void seq_handlemathfintr(FAR struct cxd56_scudev_s *priv,
 
   for (i = 0, bit = 1; i < 3; i++, bit <<= 1)
     {
-#ifndef CONFIG_DISABLE_SIGNAL
       notify = &priv->event[i];
-#endif
+
       /* Detect rise event */
 
       if (rise & bit)
         {
           putreg32(bit << 6, SCU_INT_CLEAR_MAIN);
 
-#ifndef CONFIG_DISABLE_SIGNAL
           /* Get rise event occurred timestamp */
 
           if (notify->arg)
@@ -1581,7 +1563,6 @@ static void seq_handlemathfintr(FAR struct cxd56_scudev_s *priv,
             }
 
           detected = 1;
-#endif
         }
 
       /* Detect fall event */
@@ -1590,7 +1571,6 @@ static void seq_handlemathfintr(FAR struct cxd56_scudev_s *priv,
         {
           putreg32(bit << 28, SCU_INT_CLEAR_MAIN);
 
-#ifndef CONFIG_DISABLE_SIGNAL
           /* Get fall event occurred timestamp */
 
           if (notify->arg)
@@ -1603,10 +1583,8 @@ static void seq_handlemathfintr(FAR struct cxd56_scudev_s *priv,
             }
 
           detected = 1;
-#endif
         }
 
-#ifndef CONFIG_DISABLE_SIGNAL
       if (detected)
         {
           union sigval value;
@@ -1614,10 +1592,9 @@ static void seq_handlemathfintr(FAR struct cxd56_scudev_s *priv,
           DEBUGASSERT(notify->pid != 0);
 
           value.sival_ptr = notify->arg;
-          sigqueue(notify->pid, notify->signo, value);
+          nxsig_queue(notify->pid, notify->signo, value);
           detected = 0;
         }
-#endif
     }
 }
 
@@ -1691,6 +1668,8 @@ static int seq_scuirqhandler(int irq, FAR void *context, FAR void *arg)
   uint32_t ierr0;
   uint32_t ierr1;
   uint32_t ierr2;
+  uint32_t out;
+  int tid;
   int i;
 
   intr = getreg32(SCU_INT_MASKED_STT_MAIN);
@@ -1751,16 +1730,30 @@ static int seq_scuirqhandler(int irq, FAR void *context, FAR void *arg)
   if (ierr2 != 0)
     {
       scuerr("err2: %08x\n", ierr2);
-      ierr2 &= 0x03ff;
+
       for (i = 0; i < 10; i++)
         {
-          if (ierr2 & (1 << i))
+          if (ierr2 & (0x00010001 << i))
             {
               seq_stopseq(i);
+
+              /* Get sequencer output selector */
+
+              out = (getreg32(SCUSEQ_PROPERTY(i)) >> 12) & 0x3;
+
+              if (0 < out)
+                {
+                  /* Set error code to oneshot sequencer id */
+
+                  tid = out - 1;
+
+                  priv->oneshoterr[tid] = -EIO;
+                  seq_semgive(&priv->oneshotwait[tid]);
+                }
             }
         }
 
-      putreg32(0x03ff, SCU_INT_CLEAR_ERR_2);
+      putreg32(ierr2, SCU_INT_CLEAR_ERR_2);
     }
 
   return 0;
@@ -2246,9 +2239,7 @@ static int seq_seteventnotifier(FAR struct scufifo_s *fifo,
   int riseint;
   int fallint;
   int mid;
-#ifndef CONFIG_DISABLE_SIGNAL
   irqstate_t flags;
-#endif
 
   DEBUGASSERT(fifo && ev);
 
@@ -2261,7 +2252,6 @@ static int seq_seteventnotifier(FAR struct scufifo_s *fifo,
 
   mid = fifo->mid;
 
-#ifndef CONFIG_DISABLE_SIGNAL
   /* Save signal number and target PID */
 
   flags = enter_critical_section();
@@ -2270,7 +2260,6 @@ static int seq_seteventnotifier(FAR struct scufifo_s *fifo,
   priv->event[mid].arg = ev->arg;
   priv->event[mid].fifo = fifo;
   leave_critical_section(flags);
-#endif
 
   thresh = count0 = count1 = delaysample = 0;
   riseint = fallint = 0;
@@ -2319,8 +2308,6 @@ static int seq_seteventnotifier(FAR struct scufifo_s *fifo,
 
   return OK;
 }
-
-#ifndef CONFIG_DISABLE_SIGNAL
 
 /****************************************************************************
  * Name: seq_setwatermark
@@ -2495,9 +2482,6 @@ static void seq_gettimestamp(struct scufifo_s *fifo,
 
   convert_firsttimestamp(tm, interval, sample, adjust);
 }
-#else
-#define seq_setwatermark(seq, fifoid, wm) (-ENOSYS)
-#endif
 
 /****************************************************************************
  * Name: seq_setfifomode
@@ -2512,22 +2496,16 @@ static void seq_setfifomode(FAR struct seq_s *seq, int fifoid, int enable)
   FAR struct scufifo_s *fifo = seq_getfifo(seq, fifoid);
   uint32_t val;
   irqstate_t flags;
-#ifndef CONFIG_DISABLE_SIGNAL
   FAR struct cxd56_scudev_s *priv = &g_scudev;
   FAR struct wm_notify_s *notify = &priv->wm[fifo->rid];
   bool iswtmk = false;
-#endif
-
-  DEBUGASSERT(fifo);
 
   scuinfo("FIFO mode %d wid %d\n", enable, fifo->wid);
 
-#ifndef CONFIG_DISABLE_SIGNAL
   if (notify->ts)
     {
       iswtmk = true;
     }
-#endif
 
   flags = enter_critical_section();
 
@@ -2549,15 +2527,12 @@ static void seq_setfifomode(FAR struct seq_s *seq, int fifoid, int enable)
       val = 0x1 << (fifo->rid + 9);
       putreg32(val, SCU_INT_DISABLE_ERR_0);
 
-#ifndef CONFIG_DISABLE_SIGNAL
-
       /* disable almostfull interrupt */
 
       if (iswtmk)
         {
           putreg32(val, SCU_INT_DISABLE_MAIN);
         }
-#endif
     }
   else
     {
@@ -2571,8 +2546,6 @@ static void seq_setfifomode(FAR struct seq_s *seq, int fifoid, int enable)
       val = 0x1 << (fifo->rid + 9);
       putreg32(val, SCU_INT_ENABLE_ERR_0);
 
-#ifndef CONFIG_DISABLE_SIGNAL
-
       /* enable almostfull interrupt */
 
       if (iswtmk)
@@ -2580,7 +2553,6 @@ static void seq_setfifomode(FAR struct seq_s *seq, int fifoid, int enable)
           val = 0x1 << (fifo->rid + 9);
           putreg32(val, SCU_INT_ENABLE_MAIN);
         }
-#endif
     }
 
   leave_critical_section(flags);
@@ -3159,8 +3131,7 @@ int seq_ioctl(FAR struct seq_s *seq, int fifoid, int cmd, unsigned long arg)
 
   if (fifoid < 0 || fifoid > 2)
     {
-      set_errno(-EINVAL);
-      return -1;
+      return -EINVAL;
     }
 
   scuinfo("cmd = %04x, arg = %08x\n", cmd, arg);
@@ -3406,11 +3377,6 @@ int seq_ioctl(FAR struct seq_s *seq, int fifoid, int cmd, unsigned long arg)
         break;
     }
 
-  if (ret < 0)
-    {
-      set_errno(-ret);
-    }
-
   return ret;
 }
 
@@ -3518,7 +3484,11 @@ void scu_initialize(void)
   /* Enable error interrupt  */
 
   putreg32(0x007ffe00, SCU_INT_ENABLE_ERR_0);
-  putreg32(0x03ff, SCU_INT_ENABLE_ERR_2);
+  putreg32(0x03ff03ff, SCU_INT_ENABLE_ERR_2);
+
+  /* Set the number of TxAbort repeat times */
+
+  putreg32(5, SCUSEQ_REPEAT_TXABORT);
 
   /* Enable SCU IRQ */
 

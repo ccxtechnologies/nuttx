@@ -25,6 +25,7 @@
 #include <nuttx/config.h>
 
 #include <stdio.h>
+#include <assert.h>
 #include <errno.h>
 #include <debug.h>
 #include <time.h>
@@ -85,7 +86,7 @@
 #  define HDC1008_CONFIGURATION_TRES_14BIT    (CONFIGURATION_RES_14BIT << HDC1008_CONFIGURATION_TRES_SHIFT)
 #  define HDC1008_CONFIGURATION_TRES_11BIT    (CONFIGURATION_RES_11BIT << HDC1008_CONFIGURATION_TRES_SHIFT)
 #define HDC1008_CONFIGURATION_BTST            (1 << 11) /* Bit 11: Battery status */
-#define HDC1008_CONFIGURATION_MODE            (1 << 12) /* Bit 12: Mode of aquisition */
+#define HDC1008_CONFIGURATION_MODE            (1 << 12) /* Bit 12: Mode of acquisition */
 #define HDC1008_CONFIGURATION_HEAT_SHIFT      (13)      /* Bit 13: Heater */
 #define HDC1008_CONFIGURATION_HEAT_MASK       (0x01 << HDC1008_CONFIGURATION_HEAT_SHIFT)
 #  define HDC1008_CONFIGURATION_HEAT_DISABLE  (0x00 << HDC1008_CONFIGURATION_HEAT_SHIFT)
@@ -104,7 +105,7 @@ struct hdc1008_dev_s
 #ifndef CONFIG_DISABLE_PSEUDOFS_OPERATIONS
   bool unlinked;                /* True, driver has been unlinked */
 #endif
-  uint8_t mode;                 /* Aquisition mode */
+  uint8_t mode;                 /* Acquisition mode */
   uint16_t configuration;       /* Configuration shadow register */
 #ifndef CONFIG_DISABLE_PSEUDOFS_OPERATIONS
   int16_t crefs;                /* Number of open references */
@@ -299,6 +300,7 @@ static int hdc1008_set_operational_mode(struct hdc1008_dev_s *priv,
       case HDC1008_MEAS_T_AND_RH:
         {
           reg |= HDC1008_CONFIGURATION_MODE;
+          break;
         }
 
       default:

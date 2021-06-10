@@ -1,37 +1,20 @@
 /****************************************************************************
  * arch/arm/src/cxd56xx/cxd56_sdhci.c
  *
- *   Copyright (C) 2008-2013 Gregory Nutt. All rights reserved.
- *   Author: Gregory Nutt <gnutt@nuttx.org>
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.  The
+ * ASF licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the
+ * License.  You may obtain a copy of the License at
  *
- *   Copyright 2018 Sony Semiconductor Solutions Corporation
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in
- *    the documentation and/or other materials provided with the
- *    distribution.
- * 3. Neither the name NuttX nor the names of its contributors may be
- *    used to endorse or promote products derived from this software
- *    without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
- * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
- * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
  *
  ****************************************************************************/
 
@@ -415,9 +398,8 @@ static int  cxd56_sdio_recvshort(FAR struct sdio_dev_s *dev, uint32_t cmd,
 /* EVENT handler */
 
 static void cxd56_sdio_waitenable(FAR struct sdio_dev_s *dev,
-              sdio_eventset_t eventset);
-static sdio_eventset_t cxd56_sdio_eventwait(FAR struct sdio_dev_s *dev,
-              uint32_t timeout);
+              sdio_eventset_t eventset, uint32_t timeout);
+static sdio_eventset_t cxd56_sdio_eventwait(FAR struct sdio_dev_s *dev);
 static void cxd56_sdio_callbackenable(FAR struct sdio_dev_s *dev,
               sdio_eventset_t eventset);
 static int  cxd56_sdio_registercallback(FAR struct sdio_dev_s *dev,
@@ -685,7 +667,7 @@ static void cxd56_dumpsample(struct cxd56_sdiodev_s *priv,
   mcinfo(" HTCAPBLT[%08x]: %08x\n", CXD56_SDHCI_HTCAPBLT,  regs->htcapblt);
   mcinfo("   ADMAES[%08x]: %08x\n", CXD56_SDHCI_ADMAES,    regs->admaes);
   mcinfo("  ADSADDR[%08x]: %08x\n", CXD56_SDHCI_ADSADDR,   regs->adsaddr);
-  mcinfo(" VENDSPEC[%08x]: %08x\n", CXD56_SDHCI_VENDSPEC,  regs->hostver);
+  mcinfo(" VENDSPEC[%08x]: %08x\n", CXD56_SDHCI_VENDSPEC,  regs->vendspec);
 }
 #endif
 
@@ -1077,7 +1059,7 @@ static void cxd56_endtransfer(struct cxd56_sdiodev_s *priv,
   putreg32(regval, CXD56_SDHCI_SYSCTL);
   cxd56_sdhci_adma_dscr[0] = 0;
   cxd56_sdhci_adma_dscr[1] = 0;
-  putreg32((uint32_t)cxd56_sdhci_adma_dscr, CXD56_SDHCI_ADSADDR);
+  putreg32(CXD56_PHYSADDR(cxd56_sdhci_adma_dscr), CXD56_SDHCI_ADSADDR);
   putreg32(0, CXD56_SDHCI_ADSADDR_H);
   priv->usedma = false;
   priv->dmasend_prepare = false;
@@ -2100,7 +2082,7 @@ static int cxd56_sdio_cancel(FAR struct sdio_dev_s *dev)
   priv->dmasend_regcmd = 0;
   cxd56_sdhci_adma_dscr[0] = 0;
   cxd56_sdhci_adma_dscr[1] = 0;
-  putreg32((uint32_t)cxd56_sdhci_adma_dscr, CXD56_SDHCI_ADSADDR);
+  putreg32(CXD56_PHYSADDR(cxd56_sdhci_adma_dscr), CXD56_SDHCI_ADSADDR);
   putreg32(0, CXD56_SDHCI_ADSADDR_H);
 #endif
   regval  = getreg32(CXD56_SDHCI_SYSCTL);
@@ -2458,7 +2440,7 @@ static int cxd56_sdio_recvshort(FAR struct sdio_dev_s *dev, uint32_t cmd,
       (cmd & MMCSD_RESPONSE_MASK) != MMCSD_R5_RESPONSE &&
       (cmd & MMCSD_RESPONSE_MASK) != MMCSD_R7_RESPONSE)
     {
-      mcerr("ERROR: Wrong response CMD=%08x\n", cmd);
+      mcerr("ERROR: Wrong response CMD=%08" PRIx32 "\n", cmd);
       ret = -EINVAL;
     }
   else
@@ -2511,7 +2493,7 @@ static int cxd56_sdio_recvshort(FAR struct sdio_dev_s *dev, uint32_t cmd,
  ****************************************************************************/
 
 static void cxd56_sdio_waitenable(FAR struct sdio_dev_s *dev,
-                             sdio_eventset_t eventset)
+                             sdio_eventset_t eventset, uint32_t timeout)
 {
   struct cxd56_sdiodev_s *priv = (struct cxd56_sdiodev_s *)dev;
   uint32_t waitints;
@@ -2540,6 +2522,32 @@ static void cxd56_sdio_waitenable(FAR struct sdio_dev_s *dev,
   /* Enable event-related interrupts */
 
   cxd56_configwaitints(priv, waitints, eventset, 0);
+
+  /* Check if the timeout event is specified in the event set */
+
+  if ((priv->waitevents & SDIOWAIT_TIMEOUT) != 0)
+    {
+      int delay;
+      int ret;
+
+      /* Yes.. Handle a corner case */
+
+      if (!timeout)
+        {
+          priv->wkupevent = SDIOWAIT_TIMEOUT;
+          return;
+        }
+
+      /* Start the watchdog timer */
+
+      delay = MSEC2TICK(timeout);
+      ret   = wd_start(&priv->waitwdog, delay,
+                       cxd56_eventtimeout, (wdparm_t)priv);
+      if (ret != OK)
+        {
+          mcerr("ERROR: wd_start failed: %d\n", ret);
+        }
+    }
 }
 
 /****************************************************************************
@@ -2563,8 +2571,7 @@ static void cxd56_sdio_waitenable(FAR struct sdio_dev_s *dev,
  *
  ****************************************************************************/
 
-static sdio_eventset_t cxd56_sdio_eventwait(FAR struct sdio_dev_s *dev,
-                                       uint32_t timeout)
+static sdio_eventset_t cxd56_sdio_eventwait(FAR struct sdio_dev_s *dev)
 {
   struct cxd56_sdiodev_s *priv = (struct cxd56_sdiodev_s *)dev;
   sdio_eventset_t wkupevent = 0;
@@ -2577,30 +2584,6 @@ static sdio_eventset_t cxd56_sdio_eventwait(FAR struct sdio_dev_s *dev,
 
   DEBUGASSERT((priv->waitevents != 0 && priv->wkupevent == 0) ||
               (priv->waitevents == 0 && priv->wkupevent != 0));
-
-  /* Check if the timeout event is specified in the event set */
-
-  if ((priv->waitevents & SDIOWAIT_TIMEOUT) != 0)
-    {
-      int delay;
-
-      /* Yes.. Handle a corner case */
-
-      if (!timeout)
-        {
-          return SDIOWAIT_TIMEOUT;
-        }
-
-      /* Start the watchdog timer */
-
-      delay = MSEC2TICK(timeout);
-      ret   = wd_start(&priv->waitwdog, delay,
-                       cxd56_eventtimeout, (wdparm_t)priv);
-      if (ret != OK)
-        {
-          mcerr("ERROR: wd_start failed: %d\n", ret);
-        }
-    }
 
   /* Loop until the event (or the timeout occurs). Race conditions are
    * avoided by calling cxd56_waitenable prior to triggering the logic that
@@ -2773,12 +2756,12 @@ static int cxd56_sdio_registercallback(FAR struct sdio_dev_s *dev,
 #ifdef CONFIG_SDIO_DMA
 static int cxd56_sdio_admasetup(FAR const uint8_t *buffer, size_t buflen)
 {
-  uint32_t dscr_top = (uint32_t)cxd56_sdhci_adma_dscr;
+  uint32_t dscr_top = CXD56_PHYSADDR(cxd56_sdhci_adma_dscr);
   uint32_t dscr_l;
   uint32_t i;
   uint32_t remaining;
   uint32_t len;
-  uint32_t data_addr = (uint32_t)buffer;
+  uint32_t data_addr = CXD56_PHYSADDR(buffer);
   remaining = buflen;
 
   putreg32(0x0, CXD56_SDHCI_ADSADDR_H);
@@ -2920,7 +2903,7 @@ static int cxd56_sdio_dmarecvsetup(FAR struct sdio_dev_s *dev,
   priv->usedma = true;
 
   cxd56_configxfrints(priv, SDHCI_DMADONE_INTS);
-  putreg32((uint32_t)buffer, CXD56_SDHCI_DSADDR);
+  putreg32(CXD56_PHYSADDR(buffer), CXD56_SDHCI_DSADDR);
 
   /* Sample the register state */
 
@@ -3267,7 +3250,7 @@ FAR struct sdio_dev_s *cxd56_sdhci_initialize(int slotno)
       cxd56_sdhci_adma_dscr[i] = 0;
     }
 
-  putreg32((uint32_t)cxd56_sdhci_adma_dscr, CXD56_SDHCI_ADSADDR);
+  putreg32(CXD56_PHYSADDR(cxd56_sdhci_adma_dscr), CXD56_SDHCI_ADSADDR);
   putreg32(0, CXD56_SDHCI_ADSADDR_H);
   putreg32(SDHCI_PROCTL_DMAS_ADMA2 |
           (getreg32(CXD56_SDHCI_PROCTL) & ~SDHCI_PROCTL_DMAS_MASK),

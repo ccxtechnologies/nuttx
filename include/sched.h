@@ -31,8 +31,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <strings.h>
-
-#include <nuttx/sched.h>
+#include <time.h>
+#include "queue.h"
 
 /********************************************************************************
  * Pre-processor Definitions

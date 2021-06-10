@@ -38,9 +38,9 @@ First, install the following set of system dependencies according to your Operat
 
   .. tab:: Windows / WSL
 
-    If you are are building Apache NuttX on windows and using WSL follow
+    If you are are building Apache NuttX on Windows and using WSL follow
     that installation guide for Linux.  This has been verified against the
-    Ubunutu 18.04 version.
+    Ubuntu 18.04 version.
 
     There may be complications interacting with
     programming tools over USB.  Recently support for USBIP was added to WSL 2
@@ -119,8 +119,8 @@ ARM architecture:
     .. code-block:: console
 
       $ HOST_PLATFORM=x86_64-linux   # use "mac" for macOS.
-      $ # For windows there is a zip instead (gcc-arm-none-eabi-9-2019-q4-major-win32.zip)
-      $ wget https://developer.arm.com/-/media/Files/downloads/gnu-rm/9-2019q4/gcc-arm-none-eabi-9-2019-q4-major-${HOST_PLATFORM}.tar.bz2
+      $ # For Windows there is a zip instead (gcc-arm-none-eabi-9-2019-q4-major-win32.zip)
+      $ curl -L -O https://developer.arm.com/-/media/Files/downloads/gnu-rm/9-2019q4/gcc-arm-none-eabi-9-2019-q4-major-${HOST_PLATFORM}.tar.bz2
       $ tar xf gcc-arm-none-eabi-9-2019-q4-major-${HOST_PLATFORM}.tar.bz2
 
     Add the toolchain to your `PATH`:
@@ -162,8 +162,8 @@ Apache NuttX is actively developed on GitHub. There are two main repositories, `
 
        $ mkdir nuttx
        $ cd nuttx
-       $ wget https://github.com/apache/incubator-nuttx/tarball/master -O nuttx.tar.gz 
-       $ wget https://github.com/apache/incubator-nuttx-apps/tarball/master -O apps.tar.gz
+       $ curl -L https://github.com/apache/incubator-nuttx/tarball/master -o nuttx.tar.gz 
+       $ curl -L https://github.com/apache/incubator-nuttx-apps/tarball/master -o apps.tar.gz
        $ tar zxf nuttx.tar.gz
        $ tar zxf apps.tar.gz
        
@@ -179,7 +179,7 @@ Apache NuttX is actively developed on GitHub. There are two main repositories, `
     
        $ mkdir nuttx
        $ cd nuttx
-       $ wget https://downloads.apache.org/incubator/nuttx/9.1.0/apache-nuttx-9.1.0-incubating.tar.gz -O nuttx.tar.gz 
-       $ wget https://downloads.apache.org/incubator/nuttx/9.1.0/apache-nuttx-apps-9.1.0-incubating.tar.gz -O apps.tar.gz
+       $ curl -L https://downloads.apache.org/incubator/nuttx/9.1.0/apache-nuttx-9.1.0-incubating.tar.gz -o nuttx.tar.gz 
+       $ curl -L https://downloads.apache.org/incubator/nuttx/9.1.0/apache-nuttx-apps-9.1.0-incubating.tar.gz -o apps.tar.gz
        $ tar zxf nuttx.tar.gz
        $ tar zxf apps.tar.gz

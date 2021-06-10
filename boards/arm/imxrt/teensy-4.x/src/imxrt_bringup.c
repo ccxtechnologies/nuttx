@@ -24,11 +24,11 @@
 
 #include <nuttx/config.h>
 
-#include <sys/mount.h>
 #include <sys/types.h>
 #include <debug.h>
 
 #include <syslog.h>
+#include <nuttx/fs/fs.h>
 #include <nuttx/i2c/i2c_master.h>
 #include <nuttx/video/fb.h>
 #include <imxrt_lpi2c.h>
@@ -127,11 +127,17 @@ int imxrt_bringup(void)
 #ifdef CONFIG_FS_PROCFS
   /* Mount the procfs file system */
 
-  ret = mount(NULL, "/proc", "procfs", 0, NULL);
+  ret = nx_mount(NULL, "/proc", "procfs", 0, NULL);
   if (ret < 0)
     {
       syslog(LOG_ERR, "ERROR: Failed to mount procfs at /proc: %d\n", ret);
     }
+#endif
+
+#if !defined(CONFIG_BOARDCTL_USBDEVCTRL) && !defined(CONFIG_USBDEV_COMPOSITE)
+# ifdef CONFIG_CDCACM
+    cdcacm_initialize(0, NULL);
+# endif
 #endif
 
 #if defined(CONFIG_I2C_DRIVER)

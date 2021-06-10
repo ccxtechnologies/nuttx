@@ -1,5 +1,5 @@
 /****************************************************************************
- * boards/arm/sam34/sam4s-xplained-pro/src/up_wdt.c
+ * boards/arm/sam34/sam4s-xplained-pro/src/sam_wdt.c
  *
  *   Copyright (C) 2014, 2016-2018 Gregory Nutt. All rights reserved.
  *   Authors: Gregory Nutt <gnutt@nuttx.org>
@@ -42,6 +42,7 @@
 #include <sys/types.h>
 #include <sys/ioctl.h>
 
+#include <assert.h>
 #include <errno.h>
 #include <debug.h>
 #include <sched.h>
@@ -114,7 +115,7 @@ static int wdog_daemon(int argc, char *argv[])
   ret = file_ioctl(&filestruct, WDIOC_START, 0);
   if (ret < 0)
     {
-      wderr("ERROR: ioctl(WDIOC_START) failed: %d\n", errno);
+      wderr("ERROR: file_ioctl(WDIOC_START) failed: %d\n", ret);
       goto errout_with_dev;
     }
 
@@ -127,7 +128,7 @@ static int wdog_daemon(int argc, char *argv[])
       ret = file_ioctl(&filestruct, WDIOC_KEEPALIVE, 0);
       if (ret < 0)
         {
-          wderr("ERROR: ioctl(WDIOC_KEEPALIVE) failed: %d\n", errno);
+          wderr("ERROR: file_ioctl(WDIOC_KEEPALIVE) failed: %d\n", ret);
           goto errout_with_dev;
         }
     }
@@ -180,7 +181,7 @@ int sam_watchdog_initialize(void)
                    (unsigned long)CONFIG_WDT_TIMEOUT);
   if (ret < 0)
     {
-      wderr("ERROR: ioctl(WDIOC_SETTIMEOUT) failed: %d\n", errno);
+      wderr("ERROR: file_ioctl(WDIOC_SETTIMEOUT) failed: %d\n", ret);
       goto errout_with_dev;
     }
 
@@ -191,7 +192,7 @@ int sam_watchdog_initialize(void)
                    (unsigned long)CONFIG_WDT_MINTIME);
   if (ret < 0)
     {
-      wderr("ERROR: ioctl(WDIOC_MINTIME) failed: %d\n", errno);
+      wderr("ERROR: file_ioctl(WDIOC_MINTIME) failed: %d\n", ret);
       goto errout_with_dev;
     }
 

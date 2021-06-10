@@ -383,15 +383,10 @@ Below are the steps mentioned to flash NuttX binary using Renesas flash programm
 1.In order to flash using Renesas flash programmer tool, nuttx.mot file should be generated.
 2. Add the following lines in tools/Makefile.unix file :
 ifeq ($(CONFIG_MOTOROLA_SREC),y)
-	@echo "CP: $(NUTTXNAME).mot"
-	$(Q) $(OBJCOPY) $(OBJCOPYARGS) $(BIN) -O srec -I elf32-rx-be-ns $(NUTTXNAME).mot
+	@echo "CP: nuttx.mot"
+	$(Q) $(OBJCOPY) $(OBJCOPYARGS) $(BIN) -O srec -I elf32-rx-be-ns nuttx.mot
 endif
 3. Add CONFIG_MOTOROLA_SREC=y in defconfig file or choose make menucofig->Build Setup-> Binary Output Format->
    Select Motorola SREC format.
 4. Download Renesas flash programmer tool from https://www.renesas.com/in/en/products/software-tools/tools/programmer/renesas-flash-programmer-programming-gui.html#downloads
 5. Refer to the user manual document, for steps to flash NuttX binary using RFP tool.
-Changes Made in NuttX 8.2 Code
-================================
-1. In wd_start.c file, in function wd_expiration(), typecasting is done when the signal handler nxsig_timeout() is invoked.
-2. In rtc.c, (drivers/timers/rtc.c) file, in function rtc_periodic_callback(), alarminfo->active = false is commented.
-The reason being, periodic interrupt should not be disabled. Uncommenting the above mentioned line (alarminfo->active = false), will make the periodic interrupt come only once.

@@ -1,35 +1,20 @@
 /****************************************************************************
  * arch/arm/src/cxd56xx/cxd56_dmac.c
  *
- *   Copyright 2018 Sony Semiconductor Solutions Corporation
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.  The
+ * ASF licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the
+ * License.  You may obtain a copy of the License at
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in
- *    the documentation and/or other materials provided with the
- *    distribution.
- * 3. Neither the name of Sony Semiconductor Solutions Corporation nor
- *    the names of its contributors may be used to endorse or promote
- *    products derived from this software without specific prior written
- *    permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
- * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
- * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
  *
  ****************************************************************************/
 
@@ -40,6 +25,7 @@
 #include <nuttx/config.h>
 #include <nuttx/kmalloc.h>
 
+#include <assert.h>
 #include <errno.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -51,6 +37,10 @@
 #include <nuttx/semaphore.h>
 
 #include "cxd56_dmac.h"
+
+/****************************************************************************
+ * Pre-processor Definitions
+ ****************************************************************************/
 
 #define PM_APP_ADMAC 51
 #define PM_APP_SKDMAC 52
@@ -805,7 +795,7 @@ DMA_HANDLE cxd56_dmachannel(int ch, ssize_t maxsize)
   dmach->list = (dmac_lli_t *)kmm_malloc(n * sizeof(dmac_lli_t));
   if (dmach->list == NULL)
     {
-      dmainfo("Failed to malloc\n");
+      dmainfo("Failed to kmm_malloc\n");
       goto err;
     }
 
@@ -915,6 +905,7 @@ void cxd56_rxdmasetup(DMA_HANDLE handle, uintptr_t paddr, uintptr_t maddr,
       di = 0;
     }
 
+  dst  = CXD56_PHYSADDR(dst);
   rest = nbytes;
 
   list_num = (nbytes + CXD56_DMAC_MAX_SIZE - 1) / CXD56_DMAC_MAX_SIZE;
@@ -922,7 +913,7 @@ void cxd56_rxdmasetup(DMA_HANDLE handle, uintptr_t paddr, uintptr_t maddr,
     {
       dmach->list[i].src_addr = paddr;
       dmach->list[i].dest_addr = dst;
-      dmach->list[i].nextlli = (uint32_t)&dmach->list[i + 1];
+      dmach->list[i].nextlli = CXD56_PHYSADDR(&dmach->list[i + 1]);
       dmach->list[i].control = DMAC_EX_CTRL_HELPER(0, di, 0,           /* interrupt / Dest inc / Src inc */
                                CXD56_DMAC_MASTER1, CXD56_DMAC_MASTER2, /* AHB dst master / AHB src master (fixed) */
                                config.dest_width, config.src_width,    /* Dest / Src transfer width */
@@ -985,6 +976,7 @@ void cxd56_txdmasetup(DMA_HANDLE handle, uintptr_t paddr, uintptr_t maddr,
       si = 0;
     }
 
+  src  = CXD56_PHYSADDR(src);
   rest = nbytes;
 
   list_num = (nbytes + CXD56_DMAC_MAX_SIZE - 1) / CXD56_DMAC_MAX_SIZE;
@@ -992,7 +984,7 @@ void cxd56_txdmasetup(DMA_HANDLE handle, uintptr_t paddr, uintptr_t maddr,
     {
       dmach->list[i].src_addr = src;
       dmach->list[i].dest_addr = paddr;
-      dmach->list[i].nextlli = (uint32_t)&dmach->list[i + 1];
+      dmach->list[i].nextlli = CXD56_PHYSADDR(&dmach->list[i + 1]);
       dmach->list[i].control = DMAC_EX_CTRL_HELPER(0, 0, si,               /* interrupt / Dest inc / Src inc */
                                    CXD56_DMAC_MASTER2, CXD56_DMAC_MASTER1, /* AHB dst master / AHB src master (fixed) */
                                    config.dest_width, config.src_width,    /* Dest / Src transfer width (fixed) */

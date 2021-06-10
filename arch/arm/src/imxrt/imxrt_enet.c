@@ -1,35 +1,20 @@
 /****************************************************************************
  * arch/arm/src/imxrt/imxrt_enet.c
  *
- *   Copyright (C) 2018-2019 Gregory Nutt. All rights reserved.
- *   Authors: Gregory Nutt <gnutt@nuttx.org>
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.  The
+ * ASF licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the
+ * License.  You may obtain a copy of the License at
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in
- *    the documentation and/or other materials provided with the
- *    distribution.
- * 3. Neither the name NuttX nor the names of its contributors may be
- *    used to endorse or promote products derived from this software
- *    without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
- * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
- * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
  *
  ****************************************************************************/
 
@@ -45,6 +30,7 @@
 #include <unistd.h>
 #include <time.h>
 #include <string.h>
+#include <assert.h>
 #include <debug.h>
 #include <errno.h>
 
@@ -53,6 +39,7 @@
 #include <nuttx/wdog.h>
 #include <nuttx/irq.h>
 #include <nuttx/arch.h>
+#include <nuttx/spinlock.h>
 #include <nuttx/wqueue.h>
 #include <nuttx/signal.h>
 #include <nuttx/net/mii.h>
@@ -268,7 +255,8 @@
 
 #define BUF ((struct eth_hdr_s *)priv->dev.d_buf)
 
-#define IMXRT_BUF_SIZE  ENET_ALIGN_UP(CONFIG_NET_ETH_PKTSIZE)
+#define IMXRT_BUF_SIZE  ENET_ALIGN_UP(CONFIG_NET_ETH_PKTSIZE + \
+                                      CONFIG_NET_GUARDSIZE)
 
 /****************************************************************************
  * Private Types
@@ -575,7 +563,7 @@ static int imxrt_transmit(FAR struct imxrt_driver_s *priv)
 
   /* Make the following operations atomic */
 
-  flags = spin_lock_irqsave();
+  flags = spin_lock_irqsave(NULL);
 
   /* Enable TX interrupts */
 
@@ -592,7 +580,7 @@ static int imxrt_transmit(FAR struct imxrt_driver_s *priv)
 
   putreg32(ENET_TDAR, IMXRT_ENET_TDAR);
 
-  spin_unlock_irqrestore(flags);
+  spin_unlock_irqrestore(NULL, flags);
   return OK;
 }
 
@@ -1531,7 +1519,7 @@ static void imxrt_txavail_work(FAR void *arg)
            * new XMIT data.
            */
 
-          devif_poll(&priv->dev, imxrt_txpoll);
+          devif_timer(&priv->dev, 0, imxrt_txpoll);
         }
     }
 
@@ -2331,11 +2319,13 @@ static inline int imxrt_initphy(struct imxrt_driver_s *priv, bool renogphy)
 
 #ifdef CONFIG_IMXRT_ENETUSEMII
   rcr = ENET_RCR_CRCFWD |
-        CONFIG_NET_ETH_PKTSIZE << ENET_RCR_MAX_FL_SHIFT |
+        (CONFIG_NET_ETH_PKTSIZE + CONFIG_NET_GUARDSIZE)
+          << ENET_RCR_MAX_FL_SHIFT |
         ENET_RCR_MII_MODE;
 #else
   rcr = ENET_RCR_RMII_MODE | ENET_RCR_CRCFWD |
-        CONFIG_NET_ETH_PKTSIZE << ENET_RCR_MAX_FL_SHIFT |
+        (CONFIG_NET_ETH_PKTSIZE + CONFIG_NET_GUARDSIZE)
+          << ENET_RCR_MAX_FL_SHIFT |
         ENET_RCR_MII_MODE;
 #endif
   tcr = 0;

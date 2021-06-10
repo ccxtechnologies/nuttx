@@ -1,38 +1,20 @@
 /****************************************************************************
  * arch/arm/src/cxd56xx/cxd56_clock.c
  *
- *   Copyright (C) 2008-2013 Gregory Nutt. All rights reserved.
- *   Author: Gregory Nutt <gnutt@nuttx.org>
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.  The
+ * ASF licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the
+ * License.  You may obtain a copy of the License at
  *
- *   Copyright 2018 Sony Semiconductor Solutions Corporation
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in
- *    the documentation and/or other materials provided with the
- *    distribution.
- * 3. Neither the name of Sony Semiconductor Solutions Corporation nor
- *    the names of its contributors may be used to endorse or promote
- *    products derived from this software without specific prior written
- *    permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
- * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
- * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
  *
  ****************************************************************************/
 
@@ -42,8 +24,9 @@
 
 #include <nuttx/config.h>
 #include <nuttx/arch.h>
-#include <debug.h>
 
+#include <assert.h>
+#include <debug.h>
 #include <stdio.h>
 #include <stdint.h>
 
@@ -2307,6 +2290,182 @@ uint32_t cxd56_get_img_vsync_baseclock(void)
     {
       return 0;
     }
+}
+
+static int cxd56_hostif_clock_ctrl(uint32_t block, uint32_t intr, int on)
+{
+  uint32_t val;
+  uint32_t stat;
+  int      retry = 10000;
+
+  putreg32(0xffffffff, CXD56_TOPREG_CRG_INT_CLR0);
+
+  val = getreg32(CXD56_TOPREG_SYSIOP_CKEN);
+  if (on)
+    {
+      if ((val & block) == block)
+        {
+          /* Already clock on */
+
+          return OK;
+        }
+
+      putreg32(val | block, CXD56_TOPREG_SYSIOP_CKEN);
+    }
+  else
+    {
+      if ((val & block) == 0)
+        {
+          /* Already clock off */
+
+          return OK;
+        }
+
+      putreg32(val & ~block, CXD56_TOPREG_SYSIOP_CKEN);
+    }
+
+  do
+    {
+      stat = getreg32(CXD56_TOPREG_CRG_INT_STAT_RAW0);
+      busy_wait(1000);
+    }
+  while (retry-- && !(stat & intr));
+
+  putreg32(0xffffffff, CXD56_TOPREG_CRG_INT_CLR0);
+
+  return (retry) ? OK : -ETIMEDOUT;
+}
+
+int cxd56_hostif_clock_enable(void)
+{
+  int      ret = OK;
+  uint32_t mask;
+  uint32_t intr;
+
+  /* Enable HOSTIF IRAM/DRAM & general RAM memory power. */
+
+  putreg32((0x3 << 24) | 0xf, CXD56_TOPREG_HOSTIFC_RAMMODE_SEL);
+
+  do_power_control();
+
+  mask = CKEN_HOSSPI | CKEN_HOSI2C | CKEN_HOSTIFC_SEQ | CKEN_BRG_HOST |
+    CKEN_I2CS | CKEN_PCLK_HOSTIFC | CKEN_PCLK_UART0 | CKEN_UART0;
+
+  if (getreg32(CXD56_TOPREG_SYSIOP_CKEN) & mask)
+    {
+      /* Already enabled */
+
+      return ret;
+    }
+
+  putreg32(0, CXD56_TOPREG_CKDIV_HOSTIFC);
+  putreg32(0, CXD56_TOPREG_CKSEL_SYSIOP);
+
+  mask = CKEN_HOSSPI | CKEN_HOSI2C | CKEN_BRG_HOST |
+    CKEN_I2CS | CKEN_PCLK_HOSTIFC;
+
+  intr = CRG_CK_BRG_HOST | CRG_CK_I2CS | CRG_CK_PCLK_HOSTIFC;
+
+  ret = cxd56_hostif_clock_ctrl(mask, intr, 1);
+  if (ret < 0)
+    {
+      return ret;
+    }
+
+  ret = cxd56_hostif_clock_ctrl(mask, intr, 0);
+  if (ret < 0)
+    {
+      return ret;
+    }
+
+  modifyreg32(CXD56_TOPREG_SWRESET_BUS, 0, XRST_HOSTIFC);
+  ret = cxd56_hostif_clock_ctrl(mask, intr, 1);
+
+  return ret;
+}
+
+int cxd56_hostif_clock_disable(void)
+{
+  int      ret = OK;
+  uint32_t mask;
+  uint32_t intr;
+
+  mask = CKEN_HOSSPI | CKEN_HOSI2C | CKEN_HOSTIFC_SEQ | CKEN_BRG_HOST |
+    CKEN_I2CS |  CKEN_PCLK_HOSTIFC |  CKEN_PCLK_UART0 |  CKEN_UART0;
+
+  if (0 == (getreg32(CXD56_TOPREG_SYSIOP_CKEN) & mask))
+    {
+      /* Already disabled */
+
+      return ret;
+    }
+
+  mask = CKEN_HOSSPI | CKEN_HOSI2C | CKEN_BRG_HOST |
+    CKEN_I2CS |  CKEN_PCLK_HOSTIFC;
+
+  intr = CRG_CK_BRG_HOST | CRG_CK_I2CS | CRG_CK_PCLK_HOSTIFC;
+
+  ret = cxd56_hostif_clock_ctrl(mask, intr, 0);
+  if (ret < 0)
+    {
+      return ret;
+    }
+
+  modifyreg32(CXD56_TOPREG_SWRESET_BUS, XRST_HOSTIFC, 0);
+
+  /* Disable HOSTIF IRAM/DRAM & general RAM memory power. */
+
+  putreg32(0x3, CXD56_TOPREG_HOSTIFC_RAMMODE_SEL);
+
+  do_power_control();
+
+  return ret;
+}
+
+int cxd56_hostseq_clock_enable(void)
+{
+  int ret = OK;
+
+  if (getreg32(CXD56_TOPREG_SYSIOP_CKEN) & CKEN_HOSTIFC_SEQ)
+    {
+      /* Already enabled */
+
+      return ret;
+    }
+
+  ret = cxd56_hostif_clock_ctrl(CKEN_HOSTIFC_SEQ, CRG_CK_HOSTIFC_SEQ, 1);
+  if (ret < 0)
+    {
+      return ret;
+    }
+
+  ret = cxd56_hostif_clock_ctrl(CKEN_HOSTIFC_SEQ, CRG_CK_HOSTIFC_SEQ, 0);
+  if (ret < 0)
+    {
+      return ret;
+    }
+
+  modifyreg32(CXD56_TOPREG_SWRESET_BUS, 0, XRST_HOSTIFC_ISOP);
+  ret = cxd56_hostif_clock_ctrl(CKEN_HOSTIFC_SEQ, CRG_CK_HOSTIFC_SEQ, 1);
+
+  return ret;
+}
+
+int cxd56_hostseq_clock_disable(void)
+{
+  int ret = OK;
+
+  if (0 == (getreg32(CXD56_TOPREG_SYSIOP_CKEN) & CKEN_HOSTIFC_SEQ))
+    {
+      /* Already disabled */
+
+      return ret;
+    }
+
+  modifyreg32(CXD56_TOPREG_SWRESET_BUS, XRST_HOSTIFC_ISOP, 0);
+  ret = cxd56_hostif_clock_ctrl(CKEN_HOSTIFC_SEQ, CRG_CK_HOSTIFC_SEQ, 0);
+
+  return ret;
 }
 
 int up_pmramctrl(int cmd, uintptr_t addr, size_t size)

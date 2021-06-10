@@ -125,6 +125,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
+#include <assert.h>
 #include <errno.h>
 #include <debug.h>
 
@@ -990,7 +991,7 @@ static int sam_lcd_dmawait(FAR struct sam_dev_s *priv, uint32_t timeout)
                  sam_lcd_dmatimeout, (wdparm_t)priv);
   if (ret < 0)
     {
-      lcderr("ERROR: wd_start failed: %d\n", errno);
+      lcderr("ERROR: wd_start failed: %d\n", ret);
     }
 
   /* Loop until the event (or the timeout occurs). */

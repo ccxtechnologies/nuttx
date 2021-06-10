@@ -70,18 +70,23 @@ static void _up_dumponexit(FAR struct tcb_s *tcb, FAR void *arg)
   FAR struct file_struct *filep;
 #endif
   int i;
+  int j;
 
   sinfo("  TCB=%p name=%s\n", tcb, tcb->argv[0]);
   sinfo("    priority=%d state=%d\n", tcb->sched_priority, tcb->task_state);
 
   filelist = tcb->group->tg_filelist;
-  for (i = 0; i < CONFIG_NFILE_DESCRIPTORS; i++)
+  for (i = 0; i < filelist->fl_rows; i++)
     {
-      struct inode *inode = filelist->fl_files[i].f_inode;
-      if (inode)
+      for (j = 0; j < CONFIG_NFILE_DESCRIPTORS_PER_BLOCK; j++)
         {
-          sinfo("      fd=%d refcount=%d\n",
-                i, inode->i_crefs);
+          struct inode *inode = filelist->fl_files[i][j].f_inode;
+          if (inode)
+            {
+              sinfo("      fd=%d refcount=%d\n",
+                    i * CONFIG_NFILE_DESCRIPTORS_PER_BLOCK + j,
+                    inode->i_crefs);
+            }
         }
     }
 
@@ -151,6 +156,10 @@ void up_exit(int status)
 
   tcb = this_task();
   sinfo("New Active Task TCB=%p\n", tcb);
+
+  /* Adjusts time slice for SCHED_RR & SCHED_SPORADIC cases */
+
+  nxsched_resume_scheduler(tcb);
 
 #ifdef CONFIG_ARCH_ADDRENV
   /* Make sure that the address environment for the previously running

@@ -1,37 +1,20 @@
 /****************************************************************************
  * arch/arm/src/cxd56xx/cxd56_usbdev.c
  *
- *   Copyright (C) 2008-2013 Gregory Nutt. All rights reserved.
- *   Author: Gregory Nutt <gnutt@nuttx.org>
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.  The
+ * ASF licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the
+ * License.  You may obtain a copy of the License at
  *
- *   Copyright 2018 Sony Semiconductor Solutions Corporation
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in
- *    the documentation and/or other materials provided with the
- *    distribution.
- * 3. Neither the name NuttX nor the names of its contributors may be
- *    used to endorse or promote products derived from this software
- *    without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
- * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
- * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
  *
  ****************************************************************************/
 
@@ -50,6 +33,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 #include <errno.h>
 #include <debug.h>
 #include <fcntl.h>
@@ -63,6 +47,7 @@
 #include <nuttx/fs/procfs.h>
 
 #include <nuttx/irq.h>
+#include <nuttx/signal.h>
 #include <arch/chip/usbdev.h>
 #include <arch/chip/pm.h>
 
@@ -771,7 +756,7 @@ static int cxd56_epwrite(FAR struct cxd56_ep_s *privep, FAR uint8_t *buf,
       return 0;
     }
 
-  desc->buf    = (uint32_t)(uintptr_t)buf;
+  desc->buf    = CXD56_PHYSADDR(buf);
   desc->status = nbytes | DESC_LAST; /* always last descriptor */
 
   /* Set Poll bit to ready to send */
@@ -1058,7 +1043,7 @@ static int cxd56_rdrequest(FAR struct cxd56_ep_s *privep)
 
   usbtrace(TRACE_READ(privep->epphy), privep->ep.maxpacket);
 
-  desc->buf    = (uint32_t)(uintptr_t)privreq->req.buf;
+  desc->buf    = CXD56_PHYSADDR(privreq->req.buf);
   desc->status = privep->ep.maxpacket | DESC_LAST;
 
   /* Ready to receive next packet */
@@ -2039,12 +2024,12 @@ static void cxd56_ep0hwinitialize(FAR struct cxd56_usbdev_s *priv)
   memset(&g_ep0in, 0, sizeof(g_ep0in));
   memset(&g_ep0out, 0, sizeof(g_ep0out));
 
-  g_ep0out.buf    = (uint32_t)(uintptr_t)g_ep0outbuffer;
+  g_ep0out.buf    = CXD56_PHYSADDR(g_ep0outbuffer);
   g_ep0out.status = CXD56_EP0MAXPACKET | DESC_LAST;
 
-  putreg32((uint32_t)(uintptr_t)&g_ep0setup, CXD56_USB_OUT_EP_SETUP(0));
-  putreg32((uint32_t)(uintptr_t)&g_ep0in, CXD56_USB_IN_EP_DATADESC(0));
-  putreg32((uint32_t)(uintptr_t)&g_ep0out, CXD56_USB_OUT_EP_DATADESC(0));
+  putreg32(CXD56_PHYSADDR(&g_ep0setup), CXD56_USB_OUT_EP_SETUP(0));
+  putreg32(CXD56_PHYSADDR(&g_ep0in), CXD56_USB_IN_EP_DATADESC(0));
+  putreg32(CXD56_PHYSADDR(&g_ep0out), CXD56_USB_OUT_EP_DATADESC(0));
 
   /* Clear all interrupts */
 
@@ -2269,12 +2254,12 @@ static int cxd56_epconfigure(FAR struct usbdev_ep_s *ep,
 
   if (privep->in)
     {
-      putreg32((uint32_t)(uintptr_t)privep->desc,
+      putreg32(CXD56_PHYSADDR(privep->desc),
                CXD56_USB_IN_EP_DATADESC(privep->epphy));
     }
   else
     {
-      putreg32((uint32_t)(uintptr_t)privep->desc,
+      putreg32(CXD56_PHYSADDR(privep->desc),
                CXD56_USB_OUT_EP_DATADESC(privep->epphy));
     }
 
@@ -2645,12 +2630,12 @@ static int cxd56_allocepbuffer(FAR struct cxd56_ep_s *privep)
 
   if (privep->in)
     {
-      putreg32((uint32_t)(uintptr_t)privep->desc,
+      putreg32(CXD56_PHYSADDR(privep->desc),
                CXD56_USB_IN_EP_DATADESC(privep->epphy));
     }
   else
     {
-      putreg32((uint32_t)(uintptr_t)privep->desc,
+      putreg32(CXD56_PHYSADDR(privep->desc),
                CXD56_USB_OUT_EP_DATADESC(privep->epphy));
     }
 
@@ -3355,12 +3340,12 @@ static void cxd56_usbreset(FAR struct cxd56_usbdev_s *priv)
 
       if (priv->eplist[i].in)
         {
-          putreg32((uint32_t)(uintptr_t)priv->eplist[i].desc,
+          putreg32(CXD56_PHYSADDR(priv->eplist[i].desc),
                    CXD56_USB_IN_EP_DATADESC(priv->eplist[i].epphy));
         }
       else
         {
-          putreg32((uint32_t)(uintptr_t)priv->eplist[i].desc,
+          putreg32(CXD56_PHYSADDR(priv->eplist[i].desc),
                    CXD56_USB_OUT_EP_DATADESC(priv->eplist[i].epphy));
         }
 
@@ -3404,7 +3389,7 @@ static void cxd56_notify_signal(uint16_t state, uint16_t power)
     {
       union sigval value;
       value.sival_int = state << 16 | power;
-      sigqueue(priv->pid, priv->signo, value);
+      nxsig_queue(priv->pid, priv->signo, value);
     }
 }
 

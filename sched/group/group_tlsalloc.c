@@ -29,7 +29,7 @@
 #include <assert.h>
 #include <debug.h>
 
-#include <nuttx/irq.h>
+#include <nuttx/spinlock.h>
 #include <nuttx/tls.h>
 
 #include "sched/sched.h"
@@ -69,7 +69,7 @@ int tls_alloc(void)
    * avoid concurrent modification of the group TLS index set.
    */
 
-  flags = spin_lock_irqsave();
+  flags = spin_lock_irqsave(NULL);
   for (candidate = 0; candidate < CONFIG_TLS_NELEM; candidate++)
     {
       /* Is this candidate index available? */
@@ -84,7 +84,7 @@ int tls_alloc(void)
         }
     }
 
-  spin_unlock_irqrestore(flags);
+  spin_unlock_irqrestore(NULL, flags);
 
   /* Check if found a valid TLS data index. */
 

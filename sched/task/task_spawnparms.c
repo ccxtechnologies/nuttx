@@ -26,7 +26,9 @@
 
 #include <fcntl.h>
 #include <spawn.h>
+#include <assert.h>
 #include <debug.h>
+#include <errno.h>
 
 #include <nuttx/semaphore.h>
 #include <nuttx/signal.h>
@@ -84,13 +86,11 @@ static inline int nxspawn_dup2(FAR struct spawn_dup2_file_action_s *action)
 
   sinfo("Dup'ing %d->%d\n", action->fd1, action->fd2);
 
-  ret = dup2(action->fd1, action->fd2);
+  ret = nx_dup2(action->fd1, action->fd2);
   if (ret < 0)
     {
-      int errcode = get_errno();
-
-      serr("ERROR: dup2 failed: %d\n", errcode);
-      return -errcode;
+      serr("ERROR: dup2 failed: %d\n", ret);
+      return ret;
     }
 
   return OK;
@@ -123,10 +123,9 @@ static inline int nxspawn_open(FAR struct spawn_open_file_action_s *action)
 
       sinfo("Dup'ing %d->%d\n", fd, action->fd);
 
-      ret = dup2(fd, action->fd);
+      ret = nx_dup2(fd, action->fd);
       if (ret < 0)
         {
-          ret = get_errno();
           serr("ERROR: dup2 failed: %d\n", ret);
         }
 

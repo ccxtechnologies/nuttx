@@ -1,35 +1,20 @@
 /****************************************************************************
  * drivers/pipes/pipe.c
  *
- *   Copyright (C) 2008-2009, 2015, 2018 Gregory Nutt. All rights reserved.
- *   Author: Gregory Nutt <gnutt@nuttx.org>
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.  The
+ * ASF licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the
+ * License.  You may obtain a copy of the License at
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in
- *    the documentation and/or other materials provided with the
- *    distribution.
- * 3. Neither the name NuttX nor the names of its contributors may be
- *    used to endorse or promote products derived from this software
- *    without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
- * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
- * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
  *
  ****************************************************************************/
 
@@ -44,10 +29,10 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <assert.h>
 #include <errno.h>
 
 #include <nuttx/fs/fs.h>
-#include <nuttx/drivers/drivers.h>
 #include <nuttx/semaphore.h>
 
 #include "pipe_common.h"
@@ -160,6 +145,83 @@ static int pipe_close(FAR struct file *filep)
 }
 
 /****************************************************************************
+ * Name: pipe_register
+ ****************************************************************************/
+
+static int pipe_register(size_t bufsize, int flags,
+                         FAR char *devname, size_t namesize)
+{
+  FAR struct pipe_dev_s *dev;
+  int pipeno;
+  int ret;
+
+  /* Get exclusive access to the pipe allocation data */
+
+  ret = nxsem_wait(&g_pipesem);
+  if (ret < 0)
+    {
+      goto errout;
+    }
+
+  /* Allocate a minor number for the pipe device */
+
+  pipeno = pipe_allocate();
+  if (pipeno < 0)
+    {
+      ret = pipeno;
+      goto errout_with_sem;
+    }
+
+  /* Create a pathname to the pipe device */
+
+  snprintf(devname, namesize, "/dev/pipe%d", pipeno);
+
+  /* Check if the pipe device has already been created */
+
+  if ((g_pipecreated & (1 << pipeno)) == 0)
+    {
+      /* No.. Allocate and initialize a new device structure instance */
+
+      dev = pipecommon_allocdev(bufsize);
+      if (!dev)
+        {
+          ret = -ENOMEM;
+          goto errout_with_pipe;
+        }
+
+      dev->d_pipeno = pipeno;
+
+      /* Register the pipe device */
+
+      ret = register_driver(devname, &pipe_fops, 0666, (FAR void *)dev);
+      if (ret != 0)
+        {
+          nxsem_post(&g_pipesem);
+          goto errout_with_dev;
+        }
+
+      /* Remember that we created this device */
+
+       g_pipecreated |= (1 << pipeno);
+    }
+
+  nxsem_post(&g_pipesem);
+  return OK;
+
+errout_with_dev:
+  pipecommon_freedev(dev);
+
+errout_with_pipe:
+  pipe_free(pipeno);
+
+errout_with_sem:
+  nxsem_post(&g_pipesem);
+
+errout:
+  return ret;
+}
+
+/****************************************************************************
  * Public Functions
  ****************************************************************************/
 
@@ -187,66 +249,57 @@ static int pipe_close(FAR struct file *filep)
  *
  ****************************************************************************/
 
-int nx_pipe(int fd[2], size_t bufsize, int flags)
+int file_pipe(FAR struct file *filep[2], size_t bufsize, int flags)
 {
-  FAR struct pipe_dev_s *dev = NULL;
   char devname[16];
-  int pipeno;
   int ret;
 
-  /* Get exclusive access to the pipe allocation data */
+  /* Register a new pipe device */
 
-  ret = nxsem_wait(&g_pipesem);
+  ret = pipe_register(bufsize, flags, devname, sizeof(devname));
   if (ret < 0)
     {
-      goto errout;
+      return ret;
     }
 
-  /* Allocate a minor number for the pipe device */
+  /* Get a write file descriptor */
 
-  pipeno = pipe_allocate();
-  if (pipeno < 0)
+  ret = file_open(filep[1], devname, O_WRONLY | flags);
+  if (ret < 0)
     {
-      nxsem_post(&g_pipesem);
-      ret = pipeno;
-      goto errout;
+      goto errout_with_driver;
     }
 
-  /* Create a pathname to the pipe device */
+  /* Get a read file descriptor */
 
-  snprintf(devname, sizeof(devname), "/dev/pipe%d", pipeno);
-
-  /* Check if the pipe device has already been created */
-
-  if ((g_pipecreated & (1 << pipeno)) == 0)
+  ret = file_open(filep[0], devname, O_RDONLY | flags);
+  if (ret < 0)
     {
-      /* No.. Allocate and initialize a new device structure instance */
-
-      dev = pipecommon_allocdev(bufsize);
-      if (!dev)
-        {
-          nxsem_post(&g_pipesem);
-          ret = -ENOMEM;
-          goto errout_with_pipe;
-        }
-
-      dev->d_pipeno = pipeno;
-
-      /* Register the pipe device */
-
-      ret = register_driver(devname, &pipe_fops, 0666, (FAR void *)dev);
-      if (ret != 0)
-        {
-          nxsem_post(&g_pipesem);
-          goto errout_with_dev;
-        }
-
-      /* Remember that we created this device */
-
-       g_pipecreated |= (1 << pipeno);
+      goto errout_with_wrfd;
     }
 
-  nxsem_post(&g_pipesem);
+  return OK;
+
+errout_with_wrfd:
+  file_close(filep[1]);
+
+errout_with_driver:
+  unregister_driver(devname);
+  return ret;
+}
+
+int nx_pipe(int fd[2], size_t bufsize, int flags)
+{
+  char devname[16];
+  int ret;
+
+  /* Register a new pipe device */
+
+  ret = pipe_register(bufsize, flags, devname, sizeof(devname));
+  if (ret < 0)
+    {
+      return ret;
+    }
 
   /* Get a write file descriptor */
 
@@ -273,17 +326,6 @@ errout_with_wrfd:
 
 errout_with_driver:
   unregister_driver(devname);
-
-errout_with_dev:
-  if (dev)
-    {
-      pipecommon_freedev(dev);
-    }
-
-errout_with_pipe:
-  pipe_free(pipeno);
-
-errout:
   return ret;
 }
 

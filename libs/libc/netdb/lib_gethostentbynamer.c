@@ -32,6 +32,7 @@
 #include <netdb.h>
 #include <errno.h>
 #include <assert.h>
+#include <debug.h>
 
 #include <arpa/inet.h>
 
@@ -602,7 +603,7 @@ static int lib_hostfile_lookup(FAR const char *name,
   stream = fopen(CONFIG_NETDB_HOSTCONF_PATH, "r");
   if (stream == NULL)
     {
-      int errcode = -errno;
+      int errcode = -get_errno();
 
       nerr("ERROR:  Failed to open the hosts file %s: %d\n",
            CONFIG_NETDB_HOSTCONF_PATH, errcode);

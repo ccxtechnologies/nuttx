@@ -296,15 +296,15 @@ static int dns_send_query(int sd, FAR const char *name,
   ret = connect(sd, &uaddr->addr, addrlen);
   if (ret < 0)
     {
-      ret = -errno;
+      ret = -get_errno();
       nerr("ERROR: connect failed: %d\n", ret);
       return ret;
     }
 
-  ret = _NX_SEND(sd, buffer, dest - buffer, 0);
+  ret = send(sd, buffer, dest - buffer, 0);
   if (ret < 0)
     {
-      ret = -_NX_GETERRNO(ret);
+      ret = -get_errno();
       nerr("ERROR: sendto failed: %d\n", ret);
       return ret;
     }
@@ -336,6 +336,7 @@ static int dns_recv_response(int sd, FAR union dns_addr_u *addr, int naddr,
   FAR struct dns_question_s *que;
   uint16_t nquestions;
   uint16_t nanswers;
+  uint16_t temp;
   int naddr_read;
   int ret;
 
@@ -346,10 +347,10 @@ static int dns_recv_response(int sd, FAR union dns_addr_u *addr, int naddr,
 
   /* Receive the response */
 
-  ret = _NX_RECV(sd, buffer, RECV_BUFFER_SIZE, 0);
+  ret = recv(sd, buffer, RECV_BUFFER_SIZE, 0);
   if (ret < 0)
     {
-      ret = -_NX_GETERRNO(ret);
+      ret = -get_errno();
       nerr("ERROR: recv failed: %d\n", ret);
       return ret;
     }
@@ -436,11 +437,12 @@ static int dns_recv_response(int sd, FAR union dns_addr_u *addr, int naddr,
   /* Validate query type and class */
 
   que = (FAR struct dns_question_s *)nameptr;
-  ninfo("Question: type=%04x, class=%04x\n",
-        ntohs(que->type), ntohs(que->class));
 
-  if (que->type  != qinfo->rectype ||
-      que->class != HTONS(DNS_CLASS_IN))
+  /* N.B. Unaligned access may occur here */
+
+  temp = HTONS(DNS_CLASS_IN);
+  if (memcmp(&que->type, &qinfo->rectype, sizeof(uint16_t)) != 0 ||
+      memcmp(&que->class, &temp, sizeof(uint16_t)) != 0)
     {
       nerr("ERROR: DNS response with wrong question\n");
       return -EBADMSG;

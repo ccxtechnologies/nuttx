@@ -26,7 +26,9 @@
 
 #include <sys/wait.h>
 #include <spawn.h>
+#include <assert.h>
 #include <debug.h>
+#include <errno.h>
 
 #include <nuttx/sched.h>
 #include <nuttx/kthread.h>
@@ -415,10 +417,9 @@ int posix_spawn(FAR pid_t *pid, FAR const char *path,
    * for use within the OS.
    */
 
-  ret = waitpid(proxy, &status, 0);
+  ret = nx_waitpid(proxy, &status, 0);
   if (ret < 0)
     {
-      ret = -get_errno();
       serr("ERROR: waitpid() failed: %d\n", ret);
       goto errout_with_lock;
     }

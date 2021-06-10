@@ -31,6 +31,7 @@
 #include <stdbool.h>
 #include <time.h>
 #include <string.h>
+#include <assert.h>
 #include <debug.h>
 #include <queue.h>
 #include <errno.h>
@@ -1181,7 +1182,7 @@ static void rx65n_dopoll(FAR struct rx65n_ethmac_s *priv)
 
       if (dev->d_buf)
         {
-          devif_poll(dev, rx65n_txpoll);
+          devif_timer(dev, 0, rx65n_txpoll);
 
           /* We will, most likely end up with a buffer to be freed.  But it
            * might not be the same one that we allocated above.

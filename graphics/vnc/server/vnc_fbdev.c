@@ -27,6 +27,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 #include <errno.h>
 
 #if defined(CONFIG_VNCSERVER_DEBUG) && !defined(CONFIG_DEBUG_GRAPHICS)
@@ -681,7 +682,7 @@ int up_fbinitialize(int display)
  * Description:
  *   Initialize the VNC frame buffer driver.  The VNC frame buffer driver
  *   supports two initialization interfaces:  The standard up_fbinitialize()
- *   that will be called from the graphics layer and this speical
+ *   that will be called from the graphics layer and this special
  *   initialization function that can be used only by VNC aware OS logic.
  *
  *   The two initialization functions may be called separated or together in

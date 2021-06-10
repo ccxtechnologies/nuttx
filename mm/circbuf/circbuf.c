@@ -31,6 +31,8 @@
 
 #include <nuttx/config.h>
 
+#include <assert.h>
+
 #include <nuttx/kmalloc.h>
 #include <nuttx/mm/circbuf.h>
 
@@ -210,7 +212,7 @@ size_t circbuf_used(FAR struct circbuf_s *circ)
  * Name: circbuf_space
  *
  * Description:
- *   Return the remaing space of the circular buffer.
+ *   Return the remaining space of the circular buffer.
  *
  * Input Parameters:
  *   circ  - Address of the circular buffer to be used.
