@@ -20,8 +20,8 @@
 
 include $(TOPDIR)/Make.defs
 
-ifeq ($(CONFIG_IMXRT_BOOT_SDTORAM), y)
-CSRCS = imxrt_boot.c imxrt_sdcard_boot.c
+ifeq ($(CONFIG_IMXRT_BOOT_COPYTORAM), y)
+CSRCS = imxrt_boot.c imxrt_copytoram_boot.c
 else
 CSRCS = imxrt_boot.c imxrt_flexspi_nor_boot.c imxrt_flexspi_nor_flash.c
 endif

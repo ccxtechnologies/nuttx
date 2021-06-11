@@ -1,5 +1,5 @@
 /****************************************************************************
- * boards/arm/imxrt/imxrt1064-evk/src/imxrt_sdcard_boot.c
+ * boards/arm/imxrt/imxrt1064-evk/src/imxrt_copytoram_boot.c
  *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -22,7 +22,7 @@
  * Included Files
  ****************************************************************************/
 
-#include "imxrt_sdcard_boot.h"
+#include "imxrt_copytoram_boot.h"
 
 /****************************************************************************
  * Public Data

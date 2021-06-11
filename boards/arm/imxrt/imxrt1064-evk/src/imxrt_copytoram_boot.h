@@ -1,5 +1,5 @@
 /****************************************************************************
- * boards/arm/imxrt/imxrt1064-evk/src/imxrt_flexspi_nor_boot.h
+ * boards/arm/imxrt/imxrt1064-evk/src/imxrt_copytoram_boot.h
  *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -18,8 +18,8 @@
  *
  ****************************************************************************/
 
-#ifndef __BOARDS_ARM_IMXRT_IMXRT1064_EVK_SRC_IMXRT_SDCARD_BOOT_H
-#define __BOARDS_ARM_IMXRT_IMXRT1064_EVK_SRC_IMXRT_SDCARD_BOOT_H
+#ifndef __BOARDS_ARM_IMXRT_IMXRT1064_EVK_SRC_IMXRT_COPYTORAM_BOOT_H
+#define __BOARDS_ARM_IMXRT_IMXRT1064_EVK_SRC_IMXRT_COPYTORAM_BOOT_H
 
 /****************************************************************************
  * Included Files
@@ -149,4 +149,4 @@ extern const struct boot_data_s g_boot_data;
 extern  const uint8_t g_dcd_data[];
 extern  const uint32_t  _vectors[];
 
-#endif /* __BOARDS_ARM_IMXRT_IMXRT1064_EVK_SRC_IMXRT_SDCARD_BOOT_H */
+#endif /* __BOARDS_ARM_IMXRT_IMXRT1064_EVK_SRC_IMXRT_COPYTORAM_BOOT_H */

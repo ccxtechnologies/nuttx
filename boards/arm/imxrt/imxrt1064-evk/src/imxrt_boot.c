@@ -30,7 +30,13 @@
 #include "imxrt_start.h"
 #include "imxrt1064-evk.h"
 #include "arm_arch.h"
+
+#ifdef CONFIG_IMXRT_BOOT_COPYTORAM
+#include "imxrt_copytoram_boot.h"
+#else
 #include "imxrt_flexspi_nor_boot.h"
+#endif
+
 
 /****************************************************************************
  * Public Functions

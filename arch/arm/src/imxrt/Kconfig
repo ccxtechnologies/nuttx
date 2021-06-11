@@ -1222,7 +1222,7 @@ config IMXRT_BOOT_SRAM
 	select BOOT_RUNFROMEXTSRAM
 	depends on IMXRT_SEMC_SRAM
 
-config IMXRT_BOOT_SDTORAM
+config IMXRT_BOOT_COPYTORAM
 	bool "Copy image from SD Card/Flash and run from internal RAM"
 	select BOOT_COPYTORAM
 
