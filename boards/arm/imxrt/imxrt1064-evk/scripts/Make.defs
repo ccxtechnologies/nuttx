@@ -26,6 +26,8 @@ ifeq ($(CONFIG_BOOT_RUNFROMFLASH),y)
   LDSCRIPT = flash.ld
 else ifeq ($(CONFIG_BOOT_RUNFROMISRAM),y)
   LDSCRIPT = flash-ocram.ld
+else ifeq ($(CONFIG_BOOT_COPYTORAM),y)
+  LDSCRIPT = sdcard-ram.ld
 endif
 
 ifeq ($(CONFIG_CYGWIN_WINTOOL),y)

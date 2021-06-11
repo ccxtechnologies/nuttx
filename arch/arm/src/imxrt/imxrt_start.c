@@ -250,7 +250,9 @@ void __start(void)
     imxrt_ocram_initialize();
 #endif
 
-  imxrt_configure_flexram();
+#ifdef CONFIG_BOOT_COPYTORAM
+    imxrt_configure_flexram();
+#endif
 
   /* Clear .bss.  We'll do this inline (vs. calling memset) just to be
    * certain that there are no issues with the state of global variables.

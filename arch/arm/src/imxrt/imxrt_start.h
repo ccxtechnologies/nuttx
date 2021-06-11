@@ -105,7 +105,9 @@ void imxrt_boardinitialize(void);
 void imxrt_ocram_initialize(void);
 #endif
 
+#ifdef CONFIG_BOOT_COPYTORAM
 void imxrt_configure_flexram(void);
+#endif
 
 #undef EXTERN
 #if defined(__cplusplus)
