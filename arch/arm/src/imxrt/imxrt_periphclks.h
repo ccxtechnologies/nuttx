@@ -183,6 +183,7 @@
 #define imxrt_clockrun_flexio2()          imxrt_periphclk_configure(CCM_CCGR_FLEXIO2, CCM_CG_RUN)
 #define imxrt_clockrun_flexram()          imxrt_periphclk_configure(CCM_CCGR_FLEXRAM, CCM_CG_RUN)
 #define imxrt_clockrun_flexspi()          imxrt_periphclk_configure(CCM_CCGR_FLEXSPI, CCM_CG_RUN)
+#define imxrt_clockrun_flexspi2()         imxrt_periphclk_configure(CCM_CCGR_FLEXSPI2, CCM_CG_RUN)
 #define imxrt_clockrun_gpio1()            imxrt_periphclk_configure(CCM_CCGR_GPIO1, CCM_CG_RUN)
 #define imxrt_clockrun_gpio2()            imxrt_periphclk_configure(CCM_CCGR_GPIO2, CCM_CG_RUN)
 #define imxrt_clockrun_gpio3()            imxrt_periphclk_configure(CCM_CCGR_GPIO3, CCM_CG_RUN)
