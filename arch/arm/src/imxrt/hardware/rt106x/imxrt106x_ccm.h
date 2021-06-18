@@ -248,6 +248,10 @@
 #  define CCM_CBCMR_FLEXSPI2_CLK_SEL_PLL3_PFD1   ((uint32_t)(2) << CCM_CBCMR_FLEXSPI2_CLK_SEL_SHIFT)
 #  define CCM_CBCMR_FLEXSPI2_CLK_SEL_PLL2        ((uint32_t)(3) << CCM_CBCMR_FLEXSPI2_CLK_SEL_SHIFT)
 
+/*                                                            Bits 10-11:
+ *                                                                   Reserved
+ */
+
 #define CCM_CBCMR_PERIPH_CLK2_SEL_SHIFT          (12)      /* Bits 12-13: Selector for peripheral clk2 clock multiplexer */
 #define CCM_CBCMR_PERIPH_CLK2_SEL_MASK           (0x3 << CCM_CBCMR_PERIPH_CLK2_SEL_SHIFT)
 #  define CCM_CBCMR_PERIPH_CLK2_SEL(n)           ((uint32_t)(n) << CCM_CBCMR_PERIPH_CLK2_SEL_SHIFT)
