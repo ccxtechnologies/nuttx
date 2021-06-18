@@ -665,6 +665,11 @@ menuconfig IMXRT_FLEXSPI1
 	default n
 	select IMXRT_FLEXSPI
 
+menuconfig IMXRT_FLEXSPI2
+	bool "FLEXSPI2"
+	default n
+	select IMXRT_FLEXSPI
+
 endmenu # FLEXSPI Peripherals
 
 menu "ADC Peripherals"
