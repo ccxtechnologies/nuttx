@@ -663,6 +663,10 @@ int imxrt_flexspi_nor_initialize(void)
     {
       return -EIO;
     }
+  else
+    {
+      syslog(LOG_INFO, "INFO: Flash vendor ID is %x\n", vendor_id);
+    }
 
   if (imxrt_flexspi_nor_enable_quad_mode(&g_flexspi_nor))
     {
