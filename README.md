@@ -23,6 +23,10 @@ The default location is /opt which will most lilely require root permissions.
     wget https://raw.githubusercontent.com/ccxtechnologies/nuttx/master/tools/arm-toolchain/arm-none-eabi-gcc.sh
     chmod +x arm-none-eabi-gcc.sh
     ./arm-none-eabi-gcc.sh
+    
+This script creates multiple directories when building the toolchain, to remove them:
+
+    rm -fr binutils-2.35.1.tar.xz binutils-2.35.1 binutils-build gcc-10.2.0 gcc-10.2.0.tar.xz gcc-build gdb-10.1 gdb-10.1.tar.xz gdb-build make.log newlib-4.1.0 newlib-4.1.0.tar.gz
 
 ## Clone the Repository
 
