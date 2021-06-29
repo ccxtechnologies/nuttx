@@ -17,6 +17,7 @@ Build arm-none-eabi toolchain from sources.\
 You can use this script as a guide:\
 https://github.com/ccxtechnologies/nuttx/blob/master/tools/arm-toolchain/arm-none-eabi-gcc.sh
 
+    wget https://raw.githubusercontent.com/ccxtechnologies/nuttx/master/tools/arm-toolchain/arm-none-eabi-gcc.sh
     chmod +x arm-none-eabi-gcc.sh
     ./arm-none-eabi-gcc.sh
 
