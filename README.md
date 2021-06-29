@@ -42,7 +42,7 @@ Clone the core NuttX RTOS and apps:
 Execute:
 
     cd nuttx/
-    ./tools/configure.sh -l ccx:netnsh
+    ./tools/configure.sh -l ccx:default
     make olddefconfig
 
 ## Building Nuttx
