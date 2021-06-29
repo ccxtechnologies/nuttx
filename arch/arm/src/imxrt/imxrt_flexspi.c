@@ -116,6 +116,28 @@ static struct imxrt_flexspidev_s g_flexspi0dev =
   .base = (struct flexspi_type_s *) IMXRT_FLEXSPIC_BASE,
 };
 
+/* FlexSPI1 driver operations */
+
+static const struct flexspi_ops_s g_flexspi1ops =
+{
+  .lock              = imxrt_flexspi_lock,
+  .transfer_blocking = imxrt_flexspi_transfer_blocking,
+  .software_reset    = imxrt_flexspi_software_reset,
+  .update_lut        = imxrt_flexspi_update_lut,
+  .set_device_config  = imxrt_flexspi_set_device_config,
+};
+
+/* This is the overall state of the FlexSPI1 controller */
+
+static struct imxrt_flexspidev_s g_flexspi1dev =
+{
+  .flexspi =
+  {
+    .ops = &g_flexspi1ops,
+  },
+  .base = (struct flexspi_type_s *) IMXRT_FLEXSPI2C_BASE,
+};
+
 #define FREQ_1MHz             (1000000ul)
 #define FLEXSPI_DLLCR_DEFAULT (0x100ul)
 #define FLEXSPI_LUT_KEY_VAL   (0x5af05af0ul)
@@ -1240,7 +1262,7 @@ struct flexspi_dev_s *imxrt_flexspi_initialize(int intf)
    * is reserved for code XIP
    */
 
-  DEBUGASSERT(intf >= 0 && intf < 1);
+  DEBUGASSERT(intf >= 0 && intf < 2);
 
   /* Select the FlexSPI interface */
 
@@ -1250,13 +1272,23 @@ struct flexspi_dev_s *imxrt_flexspi_initialize(int intf)
        * will be performed multiple times.
        */
 
-      /* Select FlexSPI */
+      /* Select FlexSPI1 */
 
       priv = &g_flexspi0dev;
 
       /* Enable clocking to the FlexSPI peripheral */
 
       imxrt_clockrun_flexspi();
+    }
+  else if (intf == 1)
+    {
+      /* Select FlexSPI */
+
+      priv = &g_flexspi1dev;
+
+      /* Enable clocking to the FlexSPI peripheral */
+
+      imxrt_clockrun_flexspi2();
     }
   else
     {

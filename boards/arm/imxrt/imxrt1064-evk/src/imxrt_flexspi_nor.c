@@ -644,6 +644,9 @@ int imxrt_flexspi_nor_initialize(void)
   imxrt_config_gpio(GPIO_FLEXSPI_IO3);
   imxrt_config_gpio(GPIO_FLEXSPI_SCK);
 
+  syslog(LOG_INFO, "INFO: configuring DQS FlexSPI2\n");
+  imxrt_config_gpio(GPIO_FLEXSPI2_DQS);
+
   g_flexspi_nor.flexspi = imxrt_flexspi_initialize(0);
   if (!g_flexspi_nor.flexspi)
     {
