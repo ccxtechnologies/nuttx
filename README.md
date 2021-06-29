@@ -17,6 +17,9 @@ Build arm-none-eabi toolchain from sources.\
 You can use this script as a guide:\
 https://github.com/ccxtechnologies/nuttx/blob/master/tools/arm-toolchain/arm-none-eabi-gcc.sh
 
+NOTE: You may want to change the installation location by changing the PREFIX variable in this script.
+The default location is /opt which will most lilely require root permissions.
+
     wget https://raw.githubusercontent.com/ccxtechnologies/nuttx/master/tools/arm-toolchain/arm-none-eabi-gcc.sh
     chmod +x arm-none-eabi-gcc.sh
     ./arm-none-eabi-gcc.sh
