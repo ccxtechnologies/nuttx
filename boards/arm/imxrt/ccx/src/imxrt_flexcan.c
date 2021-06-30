@@ -52,10 +52,6 @@
 int imxrt_can_setup(void)
 {
   int ret;
-#if defined(CONFIG_IMXRT_FLEXCAN3) && defined(CONFIG_IMXRT_FLEXCAN2)
-  canerr("ERROR: Only one FlexCAN can be defined at the same time\n");
-  return -ENODEV;
-#endif
 
 #ifdef CONFIG_IMXRT_FLEXCAN1
   imxrt_config_gpio(GPIO_FLEXCAN1_A_EN);
