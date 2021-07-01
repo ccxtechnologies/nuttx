@@ -35,7 +35,11 @@
 
 include $(TOPDIR)/Make.defs
 
-CSRCS = imxrt_boot.c imxrt_boot_mem_config.c
+ifeq ($(CONFIG_IMXRT_BOOT_COPYTORAM), y)
+CSRCS = imxrt_boot.c imxrt_copytoram_boot.c
+else
+CSRCS = imxrt_boot.c imxrt_flexspi_nor_boot.c imxrt_flexspi_nor_flash.c
+endif
 
 ifeq ($(CONFIG_LIB_BOARDCTL),y)
 CSRCS += imxrt_appinit.c imxrt_bringup.c

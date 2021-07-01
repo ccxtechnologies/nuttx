@@ -46,7 +46,12 @@
 #include "imxrt_start.h"
 #include "ccx.h"
 #include "arm_arch.h"
-#include "imxrt_boot_mem_config.h"
+
+#ifdef CONFIG_IMXRT_BOOT_COPYTORAM
+#include "imxrt_copytoram_boot.h"
+#else
+#include "imxrt_flexspi_nor_boot.h"
+#endif
 
 /****************************************************************************
  * Public Functions
@@ -91,7 +96,7 @@ void imxrt_ocram_initialize(void)
 /*
 * ITCM = 0
 * DTCM = 448K (2000:0000-2006:ffff)
-* FlexRAM OCRAM = 64K (2028:0000-2028:ffff)  
+* FlexRAM OCRAM = 64K (2028:0000-2028:ffff)
 * OCRAM2 = 512K (2020:0000-2027:ffff)
 * */
 void imxrt_configure_flexram(void)
