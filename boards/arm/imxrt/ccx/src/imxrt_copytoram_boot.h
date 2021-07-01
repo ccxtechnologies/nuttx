@@ -34,8 +34,8 @@
  *
  ****************************************************************************/
 
-#ifndef __BOARDS_ARM_IMXRT_CCX_SRC_IMXRT_BOOT_MEM_CONFIG_H
-#define __BOARDS_ARM_IMXRT_CCX_SRC_IMXRT_BOOT_MEM_CONFIG_H
+#ifndef __BOARDS_ARM_IMXRT_CCX_SRC_IMXRT_COPYTORAM_BOOT_H
+#define __BOARDS_ARM_IMXRT_CCX_SRC_IMXRT_COPYTORAM_BOOT_H
 
 /****************************************************************************
  * Included Files
@@ -83,9 +83,9 @@
 #define OCRAM_BASE                  (0x20000000 + ROM_BOOTLOADER_OCRAM_RES)
 #define OCRAM_END                   (OCRAM_BASE + (448 * 1024))
 
-#  define IMAGE_DEST                OCRAM_BASE
-#  define IMAGE_DEST_END            OCRAM_END
-#  define IMAGE_DEST_OFFSET         IVT_SIZE
+#define IMAGE_DEST                OCRAM_BASE
+#define IMAGE_DEST_END            OCRAM_END
+#define IMAGE_DEST_OFFSET         IVT_SIZE
 
 #define LOCATE_IN_DEST(x)           (((uint32_t)(x)) - FLASH_BASE + IMAGE_DEST)
 #define LOCATE_IN_SRC(x)            (((uint32_t)(x)) - IMAGE_DEST + FLASH_BASE)
@@ -165,4 +165,4 @@ extern const struct boot_data_s g_boot_data;
 extern  const uint8_t g_dcd_data[];
 extern  const uint32_t  _vectors[];
 
-#endif /* __BOARDS_ARM_IMXRT_CCX_SRC_IMXRT_BOOT_MEM_CONFIG_H */
+#endif /* __BOARDS_ARM_IMXRT_CCX_SRC_IMXRT_COPYTORAM_BOOT_H */
