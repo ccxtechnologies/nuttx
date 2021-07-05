@@ -39,11 +39,19 @@ Clone the core NuttX RTOS and apps:
 
 ## Configuring NuttX
 
-Execute:
+To configure NuttX for booting off the microSD Card, type:
 
     cd nuttx/
     ./tools/configure.sh -l ccx:default
     make olddefconfig
+
+To configure NuttX for booting off the SIP Flash XiP, type:
+
+    cd nuttx/
+    ./tools/configure.sh -l ccx:defaultflash
+    make olddefconfig
+
+NOTE: Hardware modifications are needed for booting off SIP Flash.
 
 ## Building Nuttx
 To start the building process simply type:
@@ -58,7 +66,27 @@ Execute:
     lsblk
 
 If `mmcblk0` is listed, then your microSD Card is being detected and you can proceed.
-Copy the built image to microSD Card:
+Copy the built binary image to microSD Card:
 
     dd if=/dev/zero of=/dev/mmcblk0 count=4 bs=1K
     dd if=nuttx.bin of=/dev/mmcblk0 seek=1 bs=1K
+
+## Flashing the image onto SIP Flash
+
+Use [NXP MCUXpresso Secure Provisioning Tool](https://www.nxp.com/design/software/development-software/mcuxpresso-software-and-tools-/mcuxpresso-secure-provisioning-tool:MCUXPRESSO-SECURE-PROVISIONING) to load NuttX .elf image onto the SIP Flash.
+
+Turn on the board in serial download boot configuration mode.
+
+Make the following selections in the top menu of the application GUI:
+ - Processor: MIMXRT1064
+ - Boot type: Unsigned
+ - Boot device: flex-spi-nor/W25Q32JV
+ - Connection: UART.
+ 
+ In the connection menu, select applicable COM port and baud rate (115200).
+
+Locate the built NuttX ELF image "nuttx" located under nuttxspace/nuttx/. Add file extension ".elf" to it.
+
+Select Build Image tab of MCUXpresso Secure Provisioning Tool. Under "Source Executable File" select nuttx.elf from the file browser and press "Build Image" button.
+
+Once built, proceed to Write Image tab, select "Use built image option" and ensure that the nuttx_nopadding.bin appears in "Image Path" field. Press "Write Image" button and wait for successful completion. Change the boot configuration for booting off the SIP Flash.
