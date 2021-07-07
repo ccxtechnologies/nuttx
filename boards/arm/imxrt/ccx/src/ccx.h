@@ -262,5 +262,17 @@ int imxrt_can_setup(void);
 int imxrt_gpio_initialize(void);
 #endif
 
+/****************************************************************************
+ * Name: imxrt_ina260initialize
+ *
+ * Description:
+ *   Initialize and register the INA260 driver.
+ *
+ ****************************************************************************/
+
+#ifdef CONFIG_SENSORS_INA260
+int imxrt_ina260initialize(FAR const char *devpath);
+#endif
+
 #endif /* __ASSEMBLY__ */
 #endif /* __BOARDS_ARM_IMXRT_CCX_SRC_CCX_H */

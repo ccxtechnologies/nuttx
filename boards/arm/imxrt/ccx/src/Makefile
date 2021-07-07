@@ -55,6 +55,10 @@ ifeq ($(CONFIG_IMXRT_FLEXCAN),y)
 CSRCS += imxrt_flexcan.c
 endif
 
+ifeq ($(CONFIG_SENSORS_INA260),y)
+CSRCS += imxrt_ina260.c
+endif
+
 ifeq ($(CONFIG_IMXRT_LPSPI),y)
 CSRCS += imxrt_spi.c
 endif
