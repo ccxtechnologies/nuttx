@@ -41,6 +41,7 @@
 #include <nuttx/config.h>
 #include <syslog.h>
 #include <sys/types.h>
+#include <errno.h>
 
 #include <nuttx/board.h>
 
@@ -79,6 +80,17 @@
 
 int board_app_initialize(uintptr_t arg)
 {
+  int ret;
+#ifdef CONFIG_SENSORS_INA260
+  /* Initialize and register INA260 */
+
+  ret = imxrt_ina260initialize("/dev/ina260");
+  if (ret < 0)
+    {
+      syslog(LOG_ERR, "ERROR: imxrt_ina260initialize() failed: %d\n", ret);
+    }
+#endif
+
 #ifndef CONFIG_BOARD_LATE_INITIALIZE
   /* Perform board initialization */
 
