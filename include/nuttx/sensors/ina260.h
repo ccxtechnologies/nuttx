@@ -122,6 +122,7 @@ struct ina260_s
 {
   uint32_t voltage;  /* FS range: 40.96V; LSB: 1.25mV; Device max: 36V. */
   int32_t  current;  /* [microampere] max 2.1 kA - sensor is bidirectional */
+  uint32_t power;
 };
 
 /****************************************************************************
