@@ -197,8 +197,6 @@ static int ina260_readpower(FAR struct ina260_dev_s *priv,
                              FAR struct ina260_s *buffer)
 {
   uint16_t reg;
-  int64_t  tmp;
-
   int ret;
 
   /* Read the raw bus voltage */
