@@ -349,7 +349,6 @@ static int ina260_ioctl(FAR struct file *filep, int cmd, unsigned long arg)
  *   devpath - The full path to the driver to register. E.g., "/dev/pwrmntr0"
  *   i2c - An instance of the I2C interface to use to communicate with INA260
  *   addr - The I2C address of the INA260.
- *   shuntval - the shunt resistor value in micro-ohms.
  *   config - a combination of the constants defined earlier in this file.
  *
  * Returned Value:
