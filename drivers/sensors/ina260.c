@@ -78,7 +78,6 @@ struct ina260_dev_s
   FAR struct i2c_master_s *i2c;  /* I2C interface */
   uint8_t addr;                  /* I2C address */
   uint16_t config;               /* INA260 config shadow */
-  int32_t shunt_resistor_value;  /* micro-ohms, max 2.15 kohms */
 };
 
 /****************************************************************************
@@ -361,7 +360,7 @@ static int ina260_ioctl(FAR struct file *filep, int cmd, unsigned long arg)
  ****************************************************************************/
 
 int ina260_register(FAR const char *devpath, FAR struct i2c_master_s *i2c,
-                    uint8_t addr, int32_t shuntval, uint16_t config)
+                    uint8_t addr, uint16_t config)
 {
   FAR struct ina260_dev_s *priv;
   int ret = 0;
@@ -381,7 +380,6 @@ int ina260_register(FAR const char *devpath, FAR struct i2c_master_s *i2c,
 
   priv->i2c  = i2c;
   priv->addr = addr;
-  priv->shunt_resistor_value = shuntval;
 
   /* Save the config (except opmode) */
 

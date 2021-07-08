@@ -156,7 +156,7 @@ extern "C"
  ****************************************************************************/
 
 int ina260_register(FAR const char *devpath, FAR struct i2c_master_s *i2c,
-                    uint8_t addr, int32_t shuntval, uint16_t config);
+                    uint8_t addr, uint16_t config);
 
 #undef EXTERN
 #ifdef __cplusplus
