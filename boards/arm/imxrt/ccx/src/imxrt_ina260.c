@@ -63,9 +63,6 @@
 #  define CONFIG_INA260_ADDR 0x40  /* A0 and A1 tied to ground */
 #endif
 
-#if !defined(CONFIG_INA260_SHUNTVAL)
-#  define CONFIG_INA260_SHUNTVAL 5000
-#endif
 
 /*******************************************************************************
  * Private Data
@@ -112,7 +109,7 @@ int imxrt_ina260initialize(FAR const char *devpath)
                INA260_CONFIG_MODE_SBCONT;
 
   ret = ina260_register(devpath, i2c, CONFIG_INA260_ADDR,
-                  CONFIG_INA260_SHUNTVAL, config);
+                  config);
 
   if (ret < 0)
     {
