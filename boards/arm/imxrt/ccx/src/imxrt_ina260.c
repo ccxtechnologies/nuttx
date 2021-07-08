@@ -1,5 +1,5 @@
 /*******************************************************************************
- * boards/arm/stm32l4/nucleo-l432kc/src/stm32_ina260.c
+ * boards/arm/imxrt/ccx/src/imxrt_ina260.c
  *
  *   Copyright (C) 2018 Gregory Nutt. All rights reserved.
  *   Author: Gregory Nutt <gnutt@nuttx.org>
