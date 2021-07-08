@@ -147,7 +147,6 @@ extern "C"
  *   devpath - The full path to the driver to register. E.g., "/dev/pwrmntr0"
  *   i2c - An instance of the I2C interface to use to communicate with INA260
  *   addr - The I2C address of the INA260.
- *   shuntval - resistor value in microohms
  *   config - a combination of the constants defined earlier in this file.
  *
  * Returned Value:
