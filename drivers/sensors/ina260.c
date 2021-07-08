@@ -66,7 +66,8 @@
 #define I2C_NOSTARTSTOP_DATA_MSG_INDEX    1
 
 #define BV_LSB 1250LU /* Bus voltage LSB in microvolts */
-#define SV_LSB 250LU  /* Shunt voltage LSB in microvolts times 10 */
+#define SI_LSB 1250LU /* Shunt current LSB in microvolts */
+#define P_LSB  10000LU /* Power register LSB in microwatts */
 
 /****************************************************************************
  * Private Types
@@ -212,36 +213,30 @@ static int ina260_readpower(FAR struct ina260_dev_s *priv,
 
   /* Convert register value to bus voltage */
 
-  buffer->voltage = ((uint32_t)reg) * BV_LSB; /* 1 LSB 1,25mV*/
+  buffer->voltage = ((uint32_t)reg) * BV_LSB; /* 1 LSB 1,25mV */
 
-  // /* Read the raw shunt voltage */
+  /* Read the raw shunt current */
+  ret = ina260_read16(priv, INA260_REG_CURRENT, &reg);
+  if (ret < 0)
+    {
+      snerr("ERROR: ina260_read16 failed: %d\n", ret);
+      return ret;
+    }
 
-  // ret = ina260_read16(priv, INA260_REG_SHUNT_VOLTAGE, &reg);
-  // if (ret < 0)
-  //   {
-  //     snerr("ERROR: ina260_read16 failed: %d\n", ret);
-  //     return ret;
-  //   }
+  /* Convert register value to shunt current */
 
-  // tmp = ((int64_t)(int16_t)reg);
+  buffer->current = (int32_t)reg * SI_LSB; /* 1 LSB 1,25mA */
 
-  // /* Convert shunt voltage to current across the shunt resistor.
-  //  * I(uA) = U(uV)/R(ohms)
-  //  *       = U(uV)/(R(uohms)/1000000)
-  //  *       = U(uV) * 1000000 / R(uohms)
-  //  *
-  //  * U(uV) = tmp*2,5
-  //  *
-  //  * We use a temporary 64-bit accumulator to avoid overflows.
-  //  */
+  /* Read the raw power */
+  ret = ina260_read16(priv, INA260_REG_POWER, &reg);
+  if (ret < 0)
+    {
+      snerr("ERROR: ina260_read16 failed: %d\n", ret);
+      return ret;
+    }
 
-  // tmp = tmp * 2500000LL;
-  // tmp = tmp / (int64_t)priv->shunt_resistor_value;
-
-  // buffer->current = (int32_t)tmp;
-
-  #warning "ina260_readpower() has a stub for current readings\n"
-  buffer->current = 0;
+  /* Convert register value to power */
+  buffer->power = (uint32_t)reg * P_LSB; /* 1 LSB 10mW */
 
   return OK;
 }
