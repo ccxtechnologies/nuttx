@@ -130,27 +130,42 @@ static int ina260_access(FAR struct ina260_dev_s *priv,
                          uint8_t start_register_address, bool reading,
                          FAR uint8_t *register_value, uint8_t data_length)
 {
-  struct i2c_msg_s msg[I2C_NOSTARTSTOP_MSGS];
   int ret;
 
-  msg[I2C_NOSTARTSTOP_ADDRESS_MSG_INDEX].frequency = CONFIG_INA260_I2C_FREQUENCY;
+  if (!reading)
+    {
+      struct i2c_msg_s msg;
+      sninfo("Writing\n");
+      msg.frequency = CONFIG_INA260_I2C_FREQUENCY;
+      msg.addr = priv->addr;
+      msg.flags = 0;
+      msg.buffer = register_value;
+      msg.length = data_length;
+      ret = I2C_TRANSFER(priv->i2c, &msg, 1);
+    }
+  else
+    {
+      struct i2c_msg_s msg[I2C_NOSTARTSTOP_MSGS];
+      sninfo("Reading\n");
 
-  msg[I2C_NOSTARTSTOP_ADDRESS_MSG_INDEX].addr = priv->addr;
-  msg[I2C_NOSTARTSTOP_ADDRESS_MSG_INDEX].flags = 0;
-  msg[I2C_NOSTARTSTOP_ADDRESS_MSG_INDEX].buffer = &start_register_address;
-  msg[I2C_NOSTARTSTOP_ADDRESS_MSG_INDEX].length = 1;
+      /* Change register pointer to the desired register */
+      msg[I2C_NOSTARTSTOP_ADDRESS_MSG_INDEX].frequency = CONFIG_INA260_I2C_FREQUENCY;
+      msg[I2C_NOSTARTSTOP_ADDRESS_MSG_INDEX].addr = priv->addr;
+      msg[I2C_NOSTARTSTOP_ADDRESS_MSG_INDEX].flags = 0;
+      msg[I2C_NOSTARTSTOP_ADDRESS_MSG_INDEX].buffer = &start_register_address;
+      msg[I2C_NOSTARTSTOP_ADDRESS_MSG_INDEX].length = 1;
 
-  msg[I2C_NOSTARTSTOP_DATA_MSG_INDEX].addr = msg[I2C_NOSTARTSTOP_ADDRESS_MSG_INDEX].addr;
-  msg[I2C_NOSTARTSTOP_DATA_MSG_INDEX].flags = reading ? I2C_M_READ : 0;
-  msg[I2C_NOSTARTSTOP_DATA_MSG_INDEX].buffer = register_value;
-  msg[I2C_NOSTARTSTOP_DATA_MSG_INDEX].length = data_length;
-
-  ret = I2C_TRANSFER(priv->i2c, msg, I2C_NOSTARTSTOP_MSGS);
-
-  sninfo("start_register_address: "
+      /* Format I2C message to read a word */
+      msg[I2C_NOSTARTSTOP_DATA_MSG_INDEX].addr = msg[I2C_NOSTARTSTOP_ADDRESS_MSG_INDEX].addr;
+      msg[I2C_NOSTARTSTOP_DATA_MSG_INDEX].flags = reading ? I2C_M_READ : 0;
+      msg[I2C_NOSTARTSTOP_DATA_MSG_INDEX].buffer = register_value;
+      msg[I2C_NOSTARTSTOP_DATA_MSG_INDEX].length = data_length;
+      ret = I2C_TRANSFER(priv->i2c, msg, I2C_NOSTARTSTOP_MSGS);
+      sninfo("start_register_address: "
          "0x%02X data_length: %d register_value: 0x%02x (0x%04x) ret: %d\n",
          start_register_address, data_length, *register_value,
          *((FAR uint16_t *)register_value), ret);
+    }
 
   return ret;
 }
@@ -173,14 +188,15 @@ static int ina260_read16(FAR struct ina260_dev_s *priv, uint8_t regaddr,
 static int ina260_write16(FAR struct ina260_dev_s *priv, uint8_t regaddr,
                           FAR uint16_t regvalue)
 {
-  uint8_t buf[2];
+  uint8_t buf[3];
 
   int ret;
 
-  buf[0] = (regvalue >> 8) & 0xff;
-  buf[1] =  regvalue       & 0xff;
+  buf[0] = regaddr         & 0xff;
+  buf[1] = (regvalue >> 8) & 0xff;
+  buf[2] =  regvalue       & 0xff;
 
-  ret = ina260_access(priv, regaddr, false, buf, 2);
+  ret = ina260_access(priv, regaddr, false, buf, 3);
 
   return ret;
 }
